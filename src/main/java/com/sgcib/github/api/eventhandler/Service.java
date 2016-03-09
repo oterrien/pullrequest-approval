@@ -1,4 +1,4 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;

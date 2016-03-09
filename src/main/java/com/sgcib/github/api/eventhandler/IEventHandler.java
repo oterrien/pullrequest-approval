@@ -1,4 +1,4 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
 /**
  * Created by Olivier on 07/03/2016.

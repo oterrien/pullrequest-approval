@@ -1,20 +1,19 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by Olivier on 07/03/2016.
  */
 @Component
-public class PullRequestEventHandler implements IEventHandler {
+public class IssueCommentEventHandler implements IEventHandler {
 
     @Autowired
     private Service service;
 
     @Override
     public void handle(String param) {
-        service.display("PullRequestEventHandler");
+        service.display("PullRequestReviewEventHandler");
     }
 }
