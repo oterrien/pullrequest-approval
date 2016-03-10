@@ -6,6 +6,10 @@
     <groupId>com.sgcib.github.api</groupId>
     <artifactId>pullrequest-approval</artifactId>
     <version>0.1.0</version>
+	<packaging>jar</packaging>
+	
+	<name>pullrequest-approval</name>
+	<description>SpringBoot application to be used as a GitHub Webhook for manual approval listening</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -26,9 +30,8 @@
     </dependencies>
 
     <properties>
-        <java.version>1.7</java.version>
+        <java.version>1.8</java.version>
     </properties>
-
 
     <build>
         <plugins>
