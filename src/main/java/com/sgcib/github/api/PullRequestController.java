@@ -2,13 +2,11 @@ package com.sgcib.github.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.RequestEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.boot.SpringApplication;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,12 +28,11 @@ public class PullRequestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, name = "/")
-    public ResponseEntity<Boolean> onEvent(HttpServletRequest request) {
+    public ResponseEntity<Boolean> onEvent(RequestEntity request) {
 
-        while(request.getHeaderNames().hasMoreElements()){
-            String name = request.getHeaderNames().nextElement();
-            System.out.println(name + ":" + request.getHeader(name));
-        }
+        request.getHeaders().entrySet().stream().forEach(p -> System.out.println(p.getKey() + " : " + p.getValue()));
+
+        System.out.println(request.getBody());
 
 
         /*eventFactory.getEventHandler("pull-request").
