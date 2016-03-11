@@ -25,7 +25,7 @@ public class PullRequestController {
         SpringApplication.run(PullRequestController.class, args);
     }
 
-    @RequestMapping(method = RequestMethod.POST, name = "/pullrequest-approval")
+    @RequestMapping(method = RequestMethod.POST, name = "/")
     public ResponseEntity<Boolean> onEvent(@RequestBody String requestWrapper) {
 
         eventFactory.getEventHandler("pull-request1").
