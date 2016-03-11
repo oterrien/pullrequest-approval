@@ -1,16 +1,14 @@
 package com.sgcib.github.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.stream.Stream;
+import org.springframework.web.bind.annotation.RestController;
 
 
 /**
@@ -28,17 +26,17 @@ public class PullRequestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, name = "/")
-    public ResponseEntity<Boolean> onEvent(RequestEntity request) {
+    public ResponseEntity<String> onEvent(RequestEntity request) {
 
-        request.getHeaders().entrySet().stream().forEach(p -> System.out.println(p.getKey() + " : " + p.getValue()));
+        if (!request.hasBody())
+            return new ResponseEntity("Empty Body", HttpStatus.UNPROCESSABLE_ENTITY);
 
-        System.out.println(request.getBody());
+        String event = request.getHeaders().getFirst("x-github-event");
 
+        eventFactory.getEventHandler(event).
+                ifPresent(h -> h.handle(request.getBody().toString()));
 
-        /*eventFactory.getEventHandler("pull-request").
-                ifPresent(h-> h.handle(requestWrapper));
-*/
-        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+        return new ResponseEntity("OK", HttpStatus.OK);
     }
 }
 

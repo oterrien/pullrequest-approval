@@ -5,5 +5,5 @@ package com.sgcib.github.api.eventhandler;
  */
 public interface IEventHandler {
 
-    void handle(String param);
+    void handle(String event);
 }
