@@ -1,4 +1,5 @@
 #!/bin/bash
+
 export JAVA_HOME=$OPENSHIFT_DATA_DIR/jdk1.8.0_73
 export PATH=$JAVA_HOME/bin:$PATH
 
