@@ -65,7 +65,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
             status.setContext("manual/pullrequest-approval");
             status.setDescription("The PullRequest has been rejected");
             status.setStatus("failure");
-            
+
             String statusesUrl = pullRequest.getStatusesUrl();
             postStatus(statusesUrl, status);
 
@@ -77,7 +77,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
     private PullRequest getPullRequest(String url, int number) {
 
         Map<String, String> param = new HashMap<>(1);
-        param.put("number", "1");
+        param.put("number", Integer.toString(number));
 
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject(url, PullRequest.class);
