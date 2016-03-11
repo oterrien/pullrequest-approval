@@ -1,22 +1,20 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.JSOnParser;
-import org.eclipse.egit.github.core.event.PullRequestPayload;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sgcib.github.api.payloayd.PullRequest;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by Olivier on 07/03/2016.
  */
 @Component
-public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload> implements IEventHandler {
+public class PullRequestEventHandler extends AdtEventHandler<PullRequest> implements IEventHandler {
 
     public PullRequestEventHandler() {
-        super(PullRequestPayload.class);
+        super(PullRequest.class);
     }
 
     @Override
-    public void handle(PullRequestPayload event) {
+    public void handle(PullRequest event) {
 
 
         System.out.println(event.getAction());

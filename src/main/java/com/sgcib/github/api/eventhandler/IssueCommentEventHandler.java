@@ -1,21 +1,93 @@
 package com.sgcib.github.api.eventhandler;
 
-import org.eclipse.egit.github.core.event.IssueCommentPayload;
+import com.sgcib.github.api.payloayd.IssueComment;
+import com.sgcib.github.api.payloayd.PullRequest;
+import com.sgcib.github.api.payloayd.Status;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Olivier on 07/03/2016.
  */
 @Component
-public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayload> implements IEventHandler {
+public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> implements IEventHandler {
+
+    private List<String> acceptedComments = Stream.of("approved", "ok").
+            collect(Collectors.toList());
+
+    private List<String> refusedComments = Stream.of("refused", "ko", "rejected").
+            collect(Collectors.toList());
 
     public IssueCommentEventHandler() {
-        super(IssueCommentPayload.class);
+        super(IssueComment.class);
     }
 
     @Override
-    public void handle(IssueCommentPayload event) {
+    public void handle(IssueComment event) {
 
-        System.out.println(event.getAction());
+        String comment = event.getComment().getBody().trim().toLowerCase();
+
+        if (acceptedComments.contains(comment)) {
+
+            String pullUrl = event.getRepository().getPullsUrl().replace("{/", "/{");
+            int number = event.getIssue().getNumber();
+            PullRequest pullRequest = getPullRequest(pullUrl, number);
+
+            if (pullRequest == null)
+                return;
+
+            Status status = new Status();
+            status.setContext("manual/pullrequest-approval");
+            status.setDescription("The PullRequest has been approved");
+            status.setStatus("success");
+
+            String statusesUrl = pullRequest.getStatusesUrl();
+            postStatus(statusesUrl, status);
+
+            return;
+        }
+
+        if (refusedComments.contains(comment)) {
+
+            String pullUrl = event.getRepository().getPullsUrl().replace("{/", "/{");
+            int number = event.getIssue().getNumber();
+            PullRequest pullRequest = getPullRequest(pullUrl, number);
+            if (pullRequest == null)
+                return;
+
+            Status status = new Status();
+            status.setContext("manual/pullrequest-approval");
+            status.setDescription("The PullRequest has been rejected");
+            status.setStatus("failure");
+            
+            String statusesUrl = pullRequest.getStatusesUrl();
+            postStatus(statusesUrl, status);
+
+            return;
+        }
+
     }
+
+    private PullRequest getPullRequest(String url, int number) {
+
+        Map<String, String> param = new HashMap<>(1);
+        param.put("number", "1");
+
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(url, PullRequest.class);
+    }
+
+    private void postStatus(String url, Status status) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForObject(url, status, String.class);
+
+    }
+
 }
