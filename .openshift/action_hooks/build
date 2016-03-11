@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "launch build"
+
 cd $OPENSHIFT_DATA_DIR
 
 if [ ! -d apache-maven-3.3.3 ]; then
