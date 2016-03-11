@@ -3,9 +3,12 @@ package com.sgcib.github.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.*;
-import org.springframework.util.StringUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.logging.Logger;
 
 
 /**
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @SpringBootApplication
 public class PullRequestController {
+
+    private static Logger logger = Logger.getLogger(PullRequestController.class.getName());
 
     @Autowired
     private EventFactory eventFactory;
@@ -27,8 +32,7 @@ public class PullRequestController {
 
         String event = headers.getFirst("x-github-event");
 
-       eventFactory.getEventHandler(event).
-                ifPresent(h -> h.handle(body.toString()));
+        eventFactory.getEventHandler(event).ifPresent(h -> h.handle(body.toString()));
 
         return new ResponseEntity("OK", HttpStatus.OK);
     }

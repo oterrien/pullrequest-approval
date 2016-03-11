@@ -36,6 +36,9 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
         if (acceptedComments.contains(comment)) {
 
             String pullUrl = event.getRepository().getPullsUrl().replace("{/", "/{");
+
+            logger.fine(pullUrl);
+
             int number = event.getIssue().getNumber();
             PullRequest pullRequest = getPullRequest(pullUrl, number);
 
@@ -48,6 +51,9 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
             status.setStatus("success");
 
             String statusesUrl = pullRequest.getStatusesUrl();
+
+            logger.fine(statusesUrl);
+
             postStatus(statusesUrl, status);
 
             return;
