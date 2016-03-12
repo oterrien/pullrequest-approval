@@ -15,4 +15,6 @@ public class IssueCommentPayload implements Serializable {
     private Issue issue;
 
     private Comment comment;
+
+    private Repository repository;
 }

@@ -15,4 +15,6 @@ public class PullRequestPayload implements Serializable {
     private int number;
 
     private PullRequest pullRequest;
+
+    private Repository repository;
 }

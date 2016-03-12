@@ -34,6 +34,8 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
     @Override
     public HttpStatus handle(IssueCommentPayload event) throws EventHandlerException {
 
+        logger.info("Event received from repository '" + event.getRepository().getName() + "'");
+
         String comment = event.getComment().getBody().trim().toLowerCase();
 
         if (logger.isDebugEnabled()) {

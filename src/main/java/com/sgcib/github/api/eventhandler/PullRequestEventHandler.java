@@ -26,6 +26,8 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
     @Override
     public HttpStatus handle(PullRequestPayload event) throws EventHandlerException {
 
+        logger.info("Event received from repository '" + event.getRepository().getName() + "'");
+
         String action = event.getAction();
 
         if (logger.isDebugEnabled()) {

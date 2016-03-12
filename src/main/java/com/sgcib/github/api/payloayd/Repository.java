@@ -11,4 +11,6 @@ import java.io.Serializable;
 public class Repository implements Serializable {
 
     private String pullsUrl;
+
+    private String name;
 }
