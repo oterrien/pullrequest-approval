@@ -98,7 +98,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
     private void postStatus(String url, Status status) throws JsonProcessingException {
 
         HttpHeaders headers = new HttpHeaders();
-        String auth = "oterrien@neuf.fr" + ":" + "GITHUBlennon69";
+        String auth = "oterrien@neuf.fr" + ":" + "xxxxxxx";
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
         String authHeader = "Basic " + new String(encodedAuth);
         headers.set("Authorization", authHeader);
