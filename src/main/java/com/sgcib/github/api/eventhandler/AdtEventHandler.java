@@ -4,6 +4,7 @@ import com.sgcib.github.api.eventhandler.configuration.HandlerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestClientException;
@@ -22,12 +23,14 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
     private final Class<T> type;
 
     @Autowired
+    @Lazy(false)
     protected JSOnService jsonService;
 
     @Autowired
+    @Lazy(false)
     protected HandlerConfiguration handlerConfiguration;
 
-    protected RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate = new RestTemplate();
 
     protected AdtEventHandler(Class<T> type) {
         this.type = type;
@@ -83,8 +86,8 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         try {
             statusStr = jsonService.serialize(status);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Posting status : " + statusStr + " to " + url + " with headers : " + this.handlerConfiguration.getHttpHeaders().toString());
+            if (logger.isInfoEnabled()) {
+                logger.info("Posting status : " + statusStr + " to " + url);
             }
 
             restTemplate.postForObject(url, new HttpEntity<>(statusStr, this.handlerConfiguration.getHttpHeaders()), String.class);

@@ -44,9 +44,9 @@ public final class IssueCommentConfiguration {
 
         Logger logger = LoggerFactory.getLogger(IssueCommentConfiguration.class);
         if (logger.isDebugEnabled()) {
-            logger.debug("Approval comments : " + this.approvalComments);
-            logger.debug("Rejection comments : " + this.rejectionComments);
-            logger.debug("Pending comments : " + this.pendingComments);
+            logger.debug("Approval comments : " + this.approvalCommentsList);
+            logger.debug("Rejection comments : " + this.rejectionCommentsList);
+            logger.debug("Pending comments : " + this.pendingCommentsList);
         }
     }
 

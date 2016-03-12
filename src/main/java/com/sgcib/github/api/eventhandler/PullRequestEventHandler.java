@@ -1,6 +1,5 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.payloayd.IssueCommentPayload;
 import com.sgcib.github.api.payloayd.PullRequest;
 import com.sgcib.github.api.payloayd.PullRequestPayload;
 import lombok.Getter;
