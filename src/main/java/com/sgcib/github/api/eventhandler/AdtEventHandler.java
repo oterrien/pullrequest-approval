@@ -1,6 +1,6 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.JSOnParser;
+import com.sgcib.github.api.JSOnService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ public abstract class AdtEventHandler<T> implements IEventHandler{
     protected static Logger logger = Logger.getLogger(IEventHandler.class.getName());
 
     @Autowired
-    private JSOnParser jsonParser;
+    protected JSOnService jsonService;
 
     private Class<T> type;
 
@@ -25,15 +25,13 @@ public abstract class AdtEventHandler<T> implements IEventHandler{
     @Override
     public final void handle(String event) {
 
-        logger.info(event);
-
         try {
-            T obj = jsonParser.parse(this.type, event);
+            T obj = jsonService.parse(this.type, event);
             handle(obj);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    protected abstract void handle(T obj);
+    protected abstract void handle(T obj) throws IOException;
 }

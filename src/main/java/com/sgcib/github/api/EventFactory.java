@@ -22,7 +22,7 @@ public class EventFactory {
         this.applicationContext = new AnnotationConfigApplicationContext(
                 PullRequestEventHandler.class,
                 IssueCommentEventHandler.class,
-                JSOnParser.class
+                JSOnService.class
         );
     }
 

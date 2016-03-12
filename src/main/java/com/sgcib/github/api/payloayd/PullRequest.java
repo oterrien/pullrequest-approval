@@ -1,5 +1,6 @@
 package com.sgcib.github.api.payloayd;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +11,7 @@ import lombok.Setter;
 @Data
 public class PullRequest {
 
-    private String action;
+    private int id;
 
     private String url;
 

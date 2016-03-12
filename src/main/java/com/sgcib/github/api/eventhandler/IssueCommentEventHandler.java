@@ -1,14 +1,22 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.payloayd.IssueComment;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sgcib.github.api.payloayd.IssueCommentPayload;
 import com.sgcib.github.api.payloayd.PullRequest;
 import com.sgcib.github.api.payloayd.Status;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,7 +24,7 @@ import java.util.stream.Stream;
  * Created by Olivier on 07/03/2016.
  */
 @Component
-public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> implements IEventHandler {
+public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayload> implements IEventHandler {
 
     private List<String> acceptedComments = Stream.of("approved", "ok").
             collect(Collectors.toList());
@@ -25,22 +33,19 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
             collect(Collectors.toList());
 
     public IssueCommentEventHandler() {
-        super(IssueComment.class);
+        super(IssueCommentPayload.class);
     }
 
     @Override
-    public void handle(IssueComment event) {
+    public void handle(IssueCommentPayload event) throws IOException {
 
         String comment = event.getComment().getBody().trim().toLowerCase();
 
         if (acceptedComments.contains(comment)) {
 
-            String pullUrl = event.getRepository().getPullsUrl().replace("{/", "/{");
+            String pullUrl = event.getIssue().getPullRequest().getUrl();
 
-            logger.fine(pullUrl);
-
-            int number = event.getIssue().getNumber();
-            PullRequest pullRequest = getPullRequest(pullUrl, number);
+            PullRequest pullRequest = getPullRequest(pullUrl);
 
             if (pullRequest == null)
                 return;
@@ -48,11 +53,13 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
             Status status = new Status();
             status.setContext("manual/pullrequest-approval");
             status.setDescription("The PullRequest has been approved");
-            status.setStatus("success");
+            status.setState("success");
+            status.setTargetUrl("");
 
             String statusesUrl = pullRequest.getStatusesUrl();
 
-            logger.fine(statusesUrl);
+            logger.info(statusesUrl);
+
 
             postStatus(statusesUrl, status);
 
@@ -61,39 +68,48 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueComment> impl
 
         if (refusedComments.contains(comment)) {
 
-            String pullUrl = event.getRepository().getPullsUrl().replace("{/", "/{");
-            int number = event.getIssue().getNumber();
-            PullRequest pullRequest = getPullRequest(pullUrl, number);
+            String pullUrl = event.getIssue().getPullRequest().getUrl();
+
+            PullRequest pullRequest = getPullRequest(pullUrl);
             if (pullRequest == null)
                 return;
 
             Status status = new Status();
             status.setContext("manual/pullrequest-approval");
             status.setDescription("The PullRequest has been rejected");
-            status.setStatus("failure");
+            status.setState("failure");
+            status.setTargetUrl("");
 
             String statusesUrl = pullRequest.getStatusesUrl();
             postStatus(statusesUrl, status);
 
             return;
         }
-
     }
 
-    private PullRequest getPullRequest(String url, int number) {
-
-        Map<String, String> param = new HashMap<>(1);
-        param.put("number", Integer.toString(number));
+    private PullRequest getPullRequest(String url) throws IOException {
 
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(url, PullRequest.class);
+        String result = restTemplate.getForObject(url, String.class);
+        return jsonService.parse(PullRequest.class, result);
     }
 
-    private void postStatus(String url, Status status) {
+
+    private void postStatus(String url, Status status) throws JsonProcessingException {
+
+        HttpHeaders headers = new HttpHeaders();
+        String auth = "oterrien@neuf.fr" + ":" + "GITHUBlennon69";
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+        String authHeader = "Basic " + new String(encodedAuth);
+        headers.set("Authorization", authHeader);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject(url, status, String.class);
+
+        logger.info(jsonService.serialize(status));
+        logger.info(headers.toString());
+
+        restTemplate.postForObject(url, new HttpEntity<>(jsonService.serialize(status), headers), String.class);
 
     }
-
 }
