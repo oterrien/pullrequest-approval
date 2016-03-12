@@ -30,7 +30,8 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
     @Lazy(false)
     protected HandlerConfiguration handlerConfiguration;
 
-    private RestTemplate restTemplate = new RestTemplate();
+    //TODO : what to do when repository is private -> no read right
+    protected RestTemplate restTemplate = new RestTemplate();
 
     protected AdtEventHandler(Class<T> type) {
         this.type = type;

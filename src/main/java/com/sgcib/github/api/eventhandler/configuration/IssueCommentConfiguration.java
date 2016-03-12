@@ -1,5 +1,7 @@
 package com.sgcib.github.api.eventhandler.configuration;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,14 +18,24 @@ import java.util.List;
 @Component
 public final class IssueCommentConfiguration {
 
-    @Value("${issue.comments.approval}")
+    @Value("${issue.comments.approval.list}")
     private String approvalComments;
 
-    @Value("${issue.comments.rejection}")
+    @Value("${issue.comments.rejection.list}")
     private String rejectionComments;
 
-    @Value("${issue.comments.pending}")
+    @Value("${issue.comments.pending.list}")
     private String pendingComments;
+
+    @Value("${remote.configuration.checked}")
+    @Getter
+    @Setter
+    private boolean isRemoteConfigurationChecked;
+
+    @Value("${remote.configuration.path}")
+    @Getter
+    @Setter
+    private String remoteConfigurationPath;
 
     private List<String> approvalCommentsList = new ArrayList<>(10);
 

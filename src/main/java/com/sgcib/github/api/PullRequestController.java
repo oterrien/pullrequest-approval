@@ -34,6 +34,8 @@ public class PullRequestController {
     @RequestMapping(method = RequestMethod.POST, name = "/webhook")
     public final ResponseEntity<String> onEvent(@RequestBody String body, @RequestHeader HttpHeaders headers) {
 
+        // TODO see the behavior when the repository is forked
+
         String event = headers.getFirst("x-github-event");
 
         if (logger.isInfoEnabled())

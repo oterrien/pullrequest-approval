@@ -10,5 +10,7 @@ import java.io.Serializable;
 @Data
 public class User implements Serializable {
 
-    public String login;
+    private String login;
+
+    private long id;
 }

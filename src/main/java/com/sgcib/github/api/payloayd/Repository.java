@@ -10,7 +10,11 @@ import java.io.Serializable;
 @Data
 public class Repository implements Serializable {
 
+    private String name;
+
     private String pullsUrl;
 
-    private String name;
+    private String contentsUrl;
+
+    private String defaultBranch;
 }
