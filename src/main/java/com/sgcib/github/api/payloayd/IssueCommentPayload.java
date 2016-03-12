@@ -1,14 +1,14 @@
 package com.sgcib.github.api.payloayd;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
+import java.io.Serializable;
 
 /**
  * Created by Olivier on 11/03/2016.
  */
 @Data
-public class IssueCommentPayload {
+public class IssueCommentPayload implements Serializable {
 
     private String action;
 

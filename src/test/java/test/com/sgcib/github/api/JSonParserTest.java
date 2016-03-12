@@ -1,6 +1,6 @@
 package test.com.sgcib.github.api;
 
-import com.sgcib.github.api.JSOnService;
+import com.sgcib.github.api.eventhandler.JSOnService;
 import com.sgcib.github.api.payloayd.PullRequest;
 import com.sgcib.github.api.payloayd.PullRequestPayload;
 import org.junit.Assert;

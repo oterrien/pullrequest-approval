@@ -1,10 +1,8 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -13,9 +11,9 @@ import java.io.IOException;
  * Created by Olivier on 11/03/2016.
  */
 @Service
-public class JSOnService {
+public final class JSOnService {
 
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     public JSOnService() {
         mapper = new ObjectMapper();
@@ -27,7 +25,7 @@ public class JSOnService {
         return mapper.readValue(content, type);
     }
 
-    public <T> String serialize(T obj) throws JsonProcessingException {
+    public <T> String serialize(T obj) throws IOException {
         return mapper.writeValueAsString(obj);
     }
 }

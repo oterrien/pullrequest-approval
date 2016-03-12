@@ -1,9 +1,13 @@
 package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.payloayd.PullRequestPayload;
+import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import java.util.stream.Stream;
 
 /**
  * Created by Olivier on 07/03/2016.
@@ -11,12 +15,44 @@ import java.io.IOException;
 @Component
 public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload> implements IEventHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(PullRequestEventHandler.class);
+
     public PullRequestEventHandler() {
         super(PullRequestPayload.class);
     }
 
     @Override
-    public void handle(PullRequestPayload event) throws IOException {
+    public HttpStatus handle(PullRequestPayload event) throws EventHandlerException {
 
+        String action = event.getAction();
+
+        switch (Action.of(action)) {
+            case CLOSED:
+            case OPENED:
+            case REOPENED:
+            case SYNCHRONIZED:
+            case NONE:
+            default:
+        }
+
+        return HttpStatus.OK;
+    }
+
+    public enum Action {
+        CLOSED("closed"), OPENED("opened"), REOPENED("reopened"), SYNCHRONIZED("synchronized"), NONE("");
+
+        @Getter
+        private String value;
+
+        Action(String value) {
+            this.value = value;
+        }
+
+        public static Action of(final String value) {
+            return Stream.of(Action.values()).
+                    filter(p -> p.value.equals(value)).
+                    findFirst().
+                    orElse(NONE);
+        }
     }
 }

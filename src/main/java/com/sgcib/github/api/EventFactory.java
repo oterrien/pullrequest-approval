@@ -1,10 +1,7 @@
 package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.IEventHandler;
-import com.sgcib.github.api.eventhandler.IssueCommentEventHandler;
-import com.sgcib.github.api.eventhandler.PullRequestEventHandler;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -14,25 +11,21 @@ import java.util.stream.Stream;
  * Created by Olivier on 07/03/2016.
  */
 @Component
-public class EventFactory {
+public final class EventFactory {
 
-    private ApplicationContext applicationContext;
+    @Autowired()
+    private IEventHandler issueCommentEventHandler;
 
-    public EventFactory() {
-        this.applicationContext = new AnnotationConfigApplicationContext(
-                PullRequestEventHandler.class,
-                IssueCommentEventHandler.class,
-                JSOnService.class
-        );
-    }
+    @Autowired
+    private IEventHandler pullRequestEventHandler;
 
     public Optional<IEventHandler> getEventHandler(String event) {
 
         switch (EventType.of(event)) {
             case ISSUE_COMMENT:
-                return Optional.of(applicationContext.getBean(IssueCommentEventHandler.class));
+                return Optional.of(issueCommentEventHandler);
             case PULL_REQUEST:
-                return Optional.of(applicationContext.getBean(PullRequestEventHandler.class));
+                return Optional.of(pullRequestEventHandler);
             case NONE:
             default:
                 return Optional.empty();
