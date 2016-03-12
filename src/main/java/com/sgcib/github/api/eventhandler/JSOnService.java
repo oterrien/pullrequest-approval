@@ -13,19 +13,20 @@ import java.io.IOException;
 @Service
 public final class JSOnService {
 
+    // ObjectMapper is threadsafe
     private final ObjectMapper mapper;
 
     public JSOnService() {
-        mapper = new ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper = new ObjectMapper();
+        this.mapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public <T> T parse(Class<T> type, String content) throws IOException {
-        return mapper.readValue(content, type);
+        return this.mapper.readValue(content, type);
     }
 
     public <T> String serialize(T obj) throws IOException {
-        return mapper.writeValueAsString(obj);
+        return this.mapper.writeValueAsString(obj);
     }
 }

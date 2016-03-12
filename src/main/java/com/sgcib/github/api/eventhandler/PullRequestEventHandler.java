@@ -1,5 +1,7 @@
 package com.sgcib.github.api.eventhandler;
 
+import com.sgcib.github.api.payloayd.IssueCommentPayload;
+import com.sgcib.github.api.payloayd.PullRequest;
 import com.sgcib.github.api.payloayd.PullRequestPayload;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -7,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -26,20 +29,33 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
 
         String action = event.getAction();
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Pull request action is '" + action + "'");
+        }
+
         switch (Action.of(action)) {
-            case CLOSED:
             case OPENED:
-            case REOPENED:
             case SYNCHRONIZED:
-            case NONE:
-            default:
+                return this.postStatus(event, Status.State.PENDING);
         }
 
         return HttpStatus.OK;
     }
 
+    private HttpStatus postStatus(PullRequestPayload event, Status.State state) throws EventHandlerException {
+
+        if (logger.isDebugEnabled())
+            logger.debug("Trying to set pull request's state to '" + state.getState() + "'");
+
+        PullRequest pullRequest = event.getPullRequest();
+        String statusesUrl = pullRequest.getStatusesUrl();
+        Status status = generateStatus(state, Optional.of(pullRequest.getUser().getLogin()));
+
+        return postStatus(statusesUrl, status);
+    }
+
     public enum Action {
-        CLOSED("closed"), OPENED("opened"), REOPENED("reopened"), SYNCHRONIZED("synchronized"), NONE("");
+        CLOSED("closed"), OPENED("opened"), REOPENED("reopened"), SYNCHRONIZED("synchronize"), NONE("");
 
         @Getter
         private String value;

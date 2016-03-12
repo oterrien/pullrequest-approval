@@ -18,11 +18,15 @@ import java.util.Optional;
 public abstract class AdtEventHandler<T> implements IEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AdtEventHandler.class);
+
     private final Class<T> type;
+
     @Autowired
     protected JSOnService jsonService;
+
     @Autowired
     protected HandlerConfiguration handlerConfiguration;
+
     protected RestTemplate restTemplate = new RestTemplate();
 
     protected AdtEventHandler(Class<T> type) {
@@ -73,7 +77,7 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         return status;
     }
 
-    protected void postStatus(String url, Status status) throws EventHandlerException {
+    protected HttpStatus postStatus(String url, Status status) throws EventHandlerException {
 
         String statusStr = null;
         try {
@@ -84,6 +88,8 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
             }
 
             restTemplate.postForObject(url, new HttpEntity<>(statusStr, this.handlerConfiguration.getHttpHeaders()), String.class);
+
+            return HttpStatus.OK;
 
         } catch (RestClientException e) {
             throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while posting status : " + url, statusStr);

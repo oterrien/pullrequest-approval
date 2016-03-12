@@ -14,7 +14,7 @@ import java.util.List;
  * Created by Olivier on 12/03/2016.
  */
 @Component
-public class IssueCommentConfiguration {
+public final class IssueCommentConfiguration {
 
     @Value("${issue.comments.approval}")
     private String approvalComments;
@@ -61,10 +61,10 @@ public class IssueCommentConfiguration {
         if (approvalCommentsList.contains(comment))
             return Type.APPROVEMENT;
 
-        return Type.UNCHANGED;
+        return Type.NONE;
     }
 
     public enum Type {
-        APPROVEMENT, REJECTION, PENDING, UNCHANGED;
+        APPROVEMENT, REJECTION, PENDING, NONE;
     }
 }

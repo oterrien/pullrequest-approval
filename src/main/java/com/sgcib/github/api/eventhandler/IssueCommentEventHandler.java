@@ -45,9 +45,6 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                 return postStatus(event, Status.State.ERROR);
             case PENDING:
                 return postStatus(event, Status.State.PENDING);
-            case UNCHANGED:
-            default:
-                //nothing
         }
 
         return HttpStatus.OK;
@@ -60,10 +57,11 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
         PullRequest pullRequest = getPullRequest(pullUrl);
+
         String statusesUrl = pullRequest.getStatusesUrl();
         Status status = generateStatus(state, Optional.of(event.getComment().getUser().getLogin()));
-        postStatus(statusesUrl, status);
-        return HttpStatus.OK;
+
+        return postStatus(statusesUrl, status);
     }
 
     private PullRequest getPullRequest(String url) throws EventHandlerException {

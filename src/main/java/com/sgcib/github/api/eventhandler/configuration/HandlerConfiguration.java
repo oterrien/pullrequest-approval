@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
  * Created by Olivier on 12/03/2016.
  */
 @Component
-public class HandlerConfiguration {
+public final class HandlerConfiguration {
 
     @Value("${handler.authorization.login}")
     private String login;

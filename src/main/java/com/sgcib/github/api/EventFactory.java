@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 @Component
 public final class EventFactory {
 
-    @Autowired()
+    @Autowired
     private IEventHandler issueCommentEventHandler;
 
     @Autowired
@@ -21,7 +21,7 @@ public final class EventFactory {
 
     public Optional<IEventHandler> getEventHandler(String event) {
 
-        switch (EventType.of(event)) {
+        switch (Event.of(event)) {
             case ISSUE_COMMENT:
                 return Optional.of(issueCommentEventHandler);
             case PULL_REQUEST:
@@ -32,18 +32,18 @@ public final class EventFactory {
         }
     }
 
-    enum EventType {
+    enum Event {
 
         PULL_REQUEST("pull_request"), ISSUE_COMMENT("issue_comment"), NONE("none");
 
         private String event;
 
-        EventType(String event) {
+        Event(String event) {
             this.event = event;
         }
 
-        public static EventType of(final String event) {
-            return Stream.of(EventType.values()).
+        public static Event of(final String event) {
+            return Stream.of(Event.values()).
                     filter(p -> p.event.equals(event)).
                     findFirst().
                     orElse(NONE);

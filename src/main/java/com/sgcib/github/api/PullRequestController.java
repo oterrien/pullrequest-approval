@@ -1,6 +1,8 @@
 package com.sgcib.github.api;
 
 import lombok.Data;
+import lombok.Setter;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @SpringBootApplication
 public class PullRequestController {
 
-    protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(PullRequestController.class);
+    protected static final Logger logger = LoggerFactory.getLogger(PullRequestController.class);
 
     @Autowired
     private EventFactory eventFactory;
@@ -42,9 +44,9 @@ public class PullRequestController {
         return result.getResponse();
     }
 
-    @Data
-    class Result {
+    private class Result {
 
+        @Setter
         private HttpStatus status;
 
         public ResponseEntity getResponse() {
