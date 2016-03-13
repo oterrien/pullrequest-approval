@@ -29,15 +29,14 @@ public final class EventFactory {
                 return Optional.of(issueCommentEventHandler);
             case PULL_REQUEST:
                 return Optional.of(pullRequestEventHandler);
-            case NONE:
             default:
                 return Optional.empty();
         }
     }
 
-    enum Event {
+    public enum Event {
 
-        PULL_REQUEST("pull_request"), ISSUE_COMMENT("issue_comment"), NONE("none");
+        PULL_REQUEST("pull_request"), ISSUE_COMMENT("issue_comment"), NONE("");
 
         private String event;
 

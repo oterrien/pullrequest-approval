@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -26,33 +25,63 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
     @Override
     public HttpStatus handle(PullRequestPayload event) throws EventHandlerException {
 
-        logger.info("Event received from repository '" + event.getRepository().getName() + "'");
+        String remoteRepositoryName = event.getRepository().getName();
+
+        if (logger.isInfoEnabled()) {
+            logger.info(remoteRepositoryName + " : event received");
+        }
 
         String action = event.getAction();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Pull request action is '" + action + "'");
+            logger.debug(remoteRepositoryName + " : pull request action is '" + action + "'");
         }
 
         switch (Action.of(action)) {
             case OPENED:
+                if (logger.isDebugEnabled()) {
+                    logger.debug(remoteRepositoryName + " : pull request has just been opened -> set status to pending");
+                }
+                return this.postStatus(event, Status.State.PENDING, remoteRepositoryName);
             case SYNCHRONIZED:
-                return this.postStatus(event, Status.State.PENDING);
+                PullRequest pullRequest = event.getPullRequest();
+                String statusesUrl = pullRequest.getStatusesUrl();
+
+                switch (getCurrentState(statusesUrl, remoteRepositoryName)) {
+                    case ERROR:
+                    case FAILURE:
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(remoteRepositoryName + " : pull request is currently rejected -> no change");
+                        }
+                        break;
+                    case PENDING:
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(remoteRepositoryName + " : pull request is currently pending -> no change");
+                        }
+                        break;
+                    case SUCCESS:
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(remoteRepositoryName + " : pull request is currently approved -> reset status to pending");
+                        }
+                        return this.postStatus(event, Status.State.PENDING, remoteRepositoryName);
+                }
+                break;
         }
 
         return HttpStatus.OK;
     }
 
-    private HttpStatus postStatus(PullRequestPayload event, Status.State state) throws EventHandlerException {
+    private HttpStatus postStatus(PullRequestPayload event, Status.State state, String remoteRepositoryName) throws EventHandlerException {
 
-        if (logger.isDebugEnabled())
-            logger.debug("Trying to set pull request's state to '" + state.getState() + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug(remoteRepositoryName + " : setting pull request state to '" + state.getState() + "'");
+        }
 
         PullRequest pullRequest = event.getPullRequest();
         String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = generateStatus(state, Optional.of(pullRequest.getUser().getLogin()));
+        Status status = state.create(pullRequest.getUser().getLogin());
 
-        return postStatus(statusesUrl, status);
+        return postStatus(statusesUrl, status, remoteRepositoryName);
     }
 
     public enum Action {

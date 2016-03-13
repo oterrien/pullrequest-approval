@@ -38,69 +38,108 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
     @Override
     public HttpStatus handle(IssueCommentPayload event) throws EventHandlerException {
 
-        logger.info("Event received from repository '" + event.getRepository().getName() + "'");
+        String remoteRepositoryName = event.getRepository().getName();
+
+        if (logger.isInfoEnabled()) {
+            logger.info(remoteRepositoryName + " : event received");
+        }
 
         String comment = event.getComment().getBody().trim().toLowerCase();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Issue comment is '" + comment + "'");
+            logger.debug(remoteRepositoryName + " : issue comment is '" + comment + "'");
         }
+
+        String pullUrl = event.getIssue().getPullRequest().getUrl();
+        PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName);
+        Status.State currentState = getCurrentState(pullRequest.getStatusesUrl(), remoteRepositoryName);
 
         switch (issueCommentConfiguration.getType(comment)) {
             case APPROVEMENT:
-                return postStatus(event, Status.State.SUCCESS);
+                if (currentState != Status.State.SUCCESS) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(remoteRepositoryName + " : pull request is not yet approved -> set status to success");
+                    }
+                    return postStatus(event, Status.State.SUCCESS, remoteRepositoryName);
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(remoteRepositoryName + " : pull request is currently approved -> no change");
+                    }
+                }
+                break;
             case REJECTION:
-                return postStatus(event, Status.State.ERROR);
+                if (currentState != Status.State.ERROR && currentState != Status.State.FAILURE) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(remoteRepositoryName + " : pull request is not yet rejected -> set status to error");
+                    }
+                    return postStatus(event, Status.State.ERROR, remoteRepositoryName);
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(remoteRepositoryName + " : pull request is currently rejected -> no change");
+                    }
+                }
+                break;
             case PENDING:
-                return postStatus(event, Status.State.PENDING);
+                if (currentState != Status.State.PENDING) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(remoteRepositoryName + " : pull request is not yet pending -> set status to pending");
+                    }
+                    return postStatus(event, Status.State.PENDING, remoteRepositoryName);
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(remoteRepositoryName + " : pull request is currently pending -> no change");
+                    }
+                }
+                break;
         }
 
         return HttpStatus.OK;
     }
 
-    private HttpStatus postStatus(IssueCommentPayload event, Status.State state) throws EventHandlerException {
+    private HttpStatus postStatus(IssueCommentPayload event, Status.State state, String remoteRepositoryName) throws EventHandlerException {
 
         if (logger.isDebugEnabled())
-            logger.debug("Trying to set pull request's state to '" + state.getState() + "'");
+            logger.debug(remoteRepositoryName + " : setting pull request state to '" + state.getState() + "'");
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
-        PullRequest pullRequest = getPullRequest(pullUrl);
+        PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName);
 
         if (state == Status.State.SUCCESS
                 && issueCommentConfiguration.isRemoteConfigurationChecked()
                 && event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
 
-            if (!isAutoApprovementAuthorized(event.getRepository())) {
-                if (logger.isInfoEnabled())
-                    logger.info("Same user cannot approve pull request");
-
+            if (!isAutoApprovementAuthorized(event.getRepository(), remoteRepositoryName)) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(remoteRepositoryName + " : same user cannot approve pull request");
+                }
                 return HttpStatus.UNAUTHORIZED;
-
             } else {
-                if (logger.isInfoEnabled())
-                    logger.info("Same user is able to approve his own pull request");
+                if (logger.isInfoEnabled()) {
+                    logger.info(remoteRepositoryName + " : OK, same user is able to approve his own pull request");
+                }
             }
         }
 
         String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = generateStatus(state, Optional.of(event.getComment().getUser().getLogin()));
+        Status status = state.create(event.getComment().getUser().getLogin());
 
-        return postStatus(statusesUrl, status);
+        return postStatus(statusesUrl, status, remoteRepositoryName);
     }
 
-    private boolean isAutoApprovementAuthorized(Repository repository) throws EventHandlerException {
+    private boolean isAutoApprovementAuthorized(Repository repository, String remoteRepositoryName) throws EventHandlerException {
 
         String remoteConfigurationFile = issueCommentConfiguration.getRemoteConfigurationPath();
 
-        if (logger.isDebugEnabled())
-            logger.debug("Load remote configuration file (" + remoteConfigurationFile + ") in order to check auto-approval");
+        if (logger.isDebugEnabled()) {
+            logger.debug(remoteRepositoryName + " : loading remote configuration file (" + remoteConfigurationFile + ") in order to check auto-approval");
+        }
 
         String defaultBranch = repository.getDefaultBranch();
         String contentsUrl = repository.getContentsUrl();
         contentsUrl = contentsUrl.replace("{+path}", remoteConfigurationFile + "?ref=" + defaultBranch);
 
         Result result = new Result();
-        getRemoteConfigurationFile(contentsUrl).ifPresent(p -> result.setAutoApprovalAuthorized(p.isAutoApprovalAuthorized()));
+        getRemoteConfigurationFile(contentsUrl, remoteRepositoryName).ifPresent(p -> result.setAutoApprovalAuthorized(p.isAutoApprovalAuthorized()));
 
         return result.isAutoApprovalAuthorized();
     }
@@ -111,50 +150,48 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         private boolean isAutoApprovalAuthorized;
     }
 
-    private Optional<RemoteConfiguration> getRemoteConfigurationFile(String url) {
-        String fileAsString = "";
+    private Optional<RemoteConfiguration> getRemoteConfigurationFile(String url, String remoteRepositoryName) {
+
         try {
-            fileAsString = restTemplate.getForObject(url, String.class);
-
-            if (logger.isDebugEnabled())
-                logger.debug("File is : " + fileAsString);
-
-            File file = jsonService.parse(File.class, fileAsString);
-
+            File file = jsonService.parse(File.class, restTemplate.getForObject(url, String.class));
             String content = restTemplate.getForObject(file.getDownloadUrl(), String.class);
             try {
                 Properties prop = new Properties();
                 prop.load(new ByteArrayInputStream(content.getBytes()));
                 return Optional.of(new RemoteConfiguration(prop));
             } catch (IOException e) {
-                logger.error("Error while parsing remote configuration content " + content, e);
+                logger.error(remoteRepositoryName + " : error while parsing remote configuration content " + content, e);
                 return Optional.empty();
             }
         } catch (RestClientException | IOException e) {
-            logger.error("Unable to retrieve remote configuration file", e);
+            logger.error(remoteRepositoryName + " : unable to retrieve remote configuration file", e);
             return Optional.empty();
         }
     }
 
-    private PullRequest getPullRequest(String url) throws EventHandlerException {
+    private PullRequest getPullRequest(String url, String remoteRepositoryName) throws EventHandlerException {
 
-        if (logger.isDebugEnabled())
-            logger.debug("Retrieving pull request : " + url);
+        if (logger.isDebugEnabled()) {
+            logger.debug(remoteRepositoryName + " : retrieving pull request : " + url);
+        }
 
         String pullRequest = "";
         try {
 
             pullRequest = restTemplate.getForObject(url, String.class);
 
-            if (logger.isDebugEnabled())
-                logger.debug("PullRequest is : " + pullRequest);
+            if (logger.isDebugEnabled()) {
+                logger.debug(remoteRepositoryName + " : pull request is : " + pullRequest);
+            }
 
             return jsonService.parse(PullRequest.class, pullRequest);
 
         } catch (RestClientException e) {
-            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while retrieving pull_request : " + url);
+            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST,
+                    remoteRepositoryName + " : error while retrieving pull_request : " + url);
         } catch (IOException e) {
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while parsing pull_request result : " + url, pullRequest);
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY,
+                    remoteRepositoryName + " : error while parsing pull_request result : " + url, pullRequest);
         }
     }
 }

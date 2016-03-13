@@ -34,7 +34,7 @@ public class PullRequestController {
     @RequestMapping(method = RequestMethod.POST, name = "/webhook")
     public final ResponseEntity<String> onEvent(@RequestBody String body, @RequestHeader HttpHeaders headers) {
 
-        // TODO see the behavior when the repository is forked
+        // TODO see the behavior when the repository is forked and private
 
         String event = headers.getFirst("x-github-event");
 
@@ -48,9 +48,9 @@ public class PullRequestController {
         return result.getResponse();
     }
 
+    @Data
     private class Result {
 
-        @Setter
         private HttpStatus status;
 
         public ResponseEntity getResponse() {

@@ -22,6 +22,9 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
 
     private final Class<T> type;
 
+    //TODO : what to do when repository is private -> no read right
+    protected RestTemplate restTemplate = new RestTemplate();
+
     @Autowired
     @Lazy(false)
     protected JSOnService jsonService;
@@ -29,9 +32,6 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
     @Autowired
     @Lazy(false)
     protected HandlerConfiguration handlerConfiguration;
-
-    //TODO : what to do when repository is private -> no read right
-    protected RestTemplate restTemplate = new RestTemplate();
 
     protected AdtEventHandler(Class<T> type) {
         this.type = type;
@@ -50,8 +50,9 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         } catch (IOException e) {
             return processError(new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Unable to parse the event", event));
         } catch (EventHandlerException e) {
-            if (e.getEvent() == null)
+            if (e.getEvent() == null){
                 e.setEvent(event);
+            }
             return processError(e);
         }
     }
@@ -70,25 +71,14 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
 
     protected abstract HttpStatus handle(T obj) throws EventHandlerException;
 
-    protected Status generateStatus(Status.State state, Optional<String> user) {
-
-        Status status = new Status();
-        status.setContext("manual/pullrequest-approval");
-        status.setTargetUrl("");
-        status.setDescription(state.getDescription(user));
-        status.setState(state.getState());
-
-        return status;
-    }
-
-    protected HttpStatus postStatus(String url, Status status) throws EventHandlerException {
+    protected HttpStatus postStatus(String url, Status status, String remoteRepositoryName) throws EventHandlerException {
 
         String statusStr = null;
         try {
             statusStr = jsonService.serialize(status);
 
             if (logger.isInfoEnabled()) {
-                logger.info("Posting status : " + statusStr + " to " + url);
+                logger.info(remoteRepositoryName + " : posting status : " + statusStr + " to " + url);
             }
 
             restTemplate.postForObject(url, new HttpEntity<>(statusStr, this.handlerConfiguration.getHttpHeaders()), String.class);
@@ -96,9 +86,24 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
             return HttpStatus.OK;
 
         } catch (RestClientException e) {
-            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while posting status : " + url, statusStr);
+            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, remoteRepositoryName + " : error while posting status : " + url, statusStr);
         } catch (IOException e) {
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while serializing status : " + url, status.toString());
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, remoteRepositoryName + " : error while serializing status : " + url, status.toString());
         }
+    }
+
+    protected Status.State getCurrentState(String statusesUrl, String remoteRepositoryName) {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(remoteRepositoryName + " : finding whether current status is rejected or not");
+        }
+
+        Optional<Status> status = Status.findLastStatus(statusesUrl, remoteRepositoryName);
+
+        if (status.isPresent()) {
+            return Status.State.of(status.get().getState());
+        }
+
+        return Status.State.PENDING;
     }
 }
