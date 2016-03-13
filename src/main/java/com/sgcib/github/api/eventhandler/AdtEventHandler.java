@@ -13,9 +13,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.Optional;
 
-/**
- * Created by Olivier on 11/03/2016.
- */
 public abstract class AdtEventHandler<T> implements IEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AdtEventHandler.class);
@@ -50,7 +47,7 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         } catch (IOException e) {
             return processError(new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Unable to parse the event", event));
         } catch (EventHandlerException e) {
-            if (e.getEvent() == null){
+            if (e.getEvent() == null) {
                 e.setEvent(event);
             }
             return processError(e);

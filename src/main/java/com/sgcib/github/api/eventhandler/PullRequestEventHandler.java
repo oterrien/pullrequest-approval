@@ -10,9 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-/**
- * Created by Olivier on 07/03/2016.
- */
 @Component
 public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload> implements IEventHandler {
 

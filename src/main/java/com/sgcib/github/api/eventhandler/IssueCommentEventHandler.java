@@ -19,9 +19,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
-/**
- * Created by Olivier on 07/03/2016.
- */
 @Component
 public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayload> implements IEventHandler {
 

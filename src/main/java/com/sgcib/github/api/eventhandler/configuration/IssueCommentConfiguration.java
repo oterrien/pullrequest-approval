@@ -12,9 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by Olivier on 12/03/2016.
- */
 @Component
 public final class IssueCommentConfiguration {
 

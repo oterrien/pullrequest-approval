@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-/**
- * Created by Olivier on 12/03/2016.
- */
-public class RemoteConfiguration {
+public final class RemoteConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoteConfiguration.class);
 

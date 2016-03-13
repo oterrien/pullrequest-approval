@@ -12,9 +12,6 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-/**
- * Created by Olivier on 11/03/2016.
- */
 @Data
 public class Status implements Serializable {
 

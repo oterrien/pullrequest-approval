@@ -8,9 +8,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-/**
- * Created by Olivier on 07/03/2016.
- */
 @Component
 public final class EventFactory {
 

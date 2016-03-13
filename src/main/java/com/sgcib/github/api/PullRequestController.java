@@ -1,7 +1,6 @@
 package com.sgcib.github.api;
 
 import lombok.Data;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-/**
- * Created by Olivier on 18/02/2016.
- */
 @RestController
 @SpringBootApplication
 public class PullRequestController {

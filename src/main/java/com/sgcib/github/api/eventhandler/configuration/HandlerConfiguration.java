@@ -10,9 +10,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
 
-/**
- * Created by Olivier on 12/03/2016.
- */
 @Component
 public final class HandlerConfiguration {
 
