@@ -1,32 +1,18 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.eventhandler.configuration.IssueCommentConfiguration;
-import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import com.sgcib.github.api.payloayd.IssueCommentPayload;
 import com.sgcib.github.api.payloayd.PullRequest;
 import com.sgcib.github.api.payloayd.Repository;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.Properties;
 
 @Component
 public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayload> implements IEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(IssueCommentEventHandler.class);
-
-    @Autowired
-    @Lazy(false)
-    private IssueCommentConfiguration issueCommentConfiguration;
 
     public IssueCommentEventHandler() {
         super(IssueCommentPayload.class);
@@ -51,7 +37,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName);
         Status.State currentState = getCurrentState(pullRequest.getStatusesUrl(), remoteRepositoryName);
 
-        switch (issueCommentConfiguration.getType(comment)) {
+        switch (configuration.getType(comment)) {
             case APPROVEMENT:
                 if (currentState != Status.State.SUCCESS) {
                     if (logger.isDebugEnabled()) {
@@ -102,7 +88,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName);
 
         if (state == Status.State.SUCCESS
-                && issueCommentConfiguration.isRemoteConfigurationChecked()
+                && configuration.isRemoteConfigurationChecked()
                 && event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
 
             if (!isAutoApprovementAuthorized(event.getRepository(), remoteRepositoryName)) {
@@ -118,25 +104,15 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         }
 
         String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = state.create(event.getComment().getUser().getLogin());
+        Status status = state.createStatus(event.getComment().getUser().getLogin());
 
-        return postStatus(statusesUrl, status, remoteRepositoryName);
+        return communicationService.post(statusesUrl, status, remoteRepositoryName);
     }
 
     private boolean isAutoApprovementAuthorized(Repository repository, String remoteRepositoryName) throws EventHandlerException {
 
-        String remoteConfigurationFile = issueCommentConfiguration.getRemoteConfigurationPath();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(remoteRepositoryName + " : loading remote configuration file (" + remoteConfigurationFile + ") in order to check auto-approval");
-        }
-
-        String defaultBranch = repository.getDefaultBranch();
-        String contentsUrl = repository.getContentsUrl();
-        contentsUrl = contentsUrl.replace("{+path}", remoteConfigurationFile + "?ref=" + defaultBranch);
-
         Result result = new Result();
-        getRemoteConfigurationFile(contentsUrl, remoteRepositoryName).ifPresent(p -> result.setAutoApprovalAuthorized(p.isAutoApprovalAuthorized()));
+        getRemoteConfiguration(repository).ifPresent(p -> result.setAutoApprovalAuthorized(p.isAutoApprovalAuthorized()));
 
         return result.isAutoApprovalAuthorized();
     }
@@ -147,48 +123,12 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         private boolean isAutoApprovalAuthorized;
     }
 
-    private Optional<RemoteConfiguration> getRemoteConfigurationFile(String url, String remoteRepositoryName) {
-
-        try {
-            File file = jsonService.parse(File.class, restTemplate.getForObject(url, String.class));
-            String content = restTemplate.getForObject(file.getDownloadUrl(), String.class);
-            try {
-                Properties prop = new Properties();
-                prop.load(new ByteArrayInputStream(content.getBytes()));
-                return Optional.of(new RemoteConfiguration(prop));
-            } catch (IOException e) {
-                logger.error(remoteRepositoryName + " : error while parsing remote configuration content " + content, e);
-                return Optional.empty();
-            }
-        } catch (RestClientException | IOException e) {
-            logger.error(remoteRepositoryName + " : unable to retrieve remote configuration file", e);
-            return Optional.empty();
-        }
-    }
-
     private PullRequest getPullRequest(String url, String remoteRepositoryName) throws EventHandlerException {
 
         if (logger.isDebugEnabled()) {
             logger.debug(remoteRepositoryName + " : retrieving pull request : " + url);
         }
 
-        String pullRequest = "";
-        try {
-
-            pullRequest = restTemplate.getForObject(url, String.class);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug(remoteRepositoryName + " : pull request is : " + pullRequest);
-            }
-
-            return jsonService.parse(PullRequest.class, pullRequest);
-
-        } catch (RestClientException e) {
-            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST,
-                    remoteRepositoryName + " : error while retrieving pull_request : " + url);
-        } catch (IOException e) {
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY,
-                    remoteRepositoryName + " : error while parsing pull_request result : " + url, pullRequest);
-        }
+        return communicationService.get(url, remoteRepositoryName, PullRequest.class);
     }
 }

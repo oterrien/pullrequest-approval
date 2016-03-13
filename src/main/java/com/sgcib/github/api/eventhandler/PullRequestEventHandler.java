@@ -41,8 +41,8 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
                 }
                 return this.postStatus(event, Status.State.PENDING, remoteRepositoryName);
             case SYNCHRONIZED:
-                PullRequest pullRequest = event.getPullRequest();
-                String statusesUrl = pullRequest.getStatusesUrl();
+
+                String statusesUrl = event.getPullRequest().getStatusesUrl();
 
                 switch (getCurrentState(statusesUrl, remoteRepositoryName)) {
                     case ERROR:
@@ -76,9 +76,9 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
 
         PullRequest pullRequest = event.getPullRequest();
         String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = state.create(pullRequest.getUser().getLogin());
+        Status status = state.createStatus(pullRequest.getUser().getLogin());
 
-        return postStatus(statusesUrl, status, remoteRepositoryName);
+        return communicationService.post(statusesUrl, status, remoteRepositoryName);
     }
 
     public enum Action {

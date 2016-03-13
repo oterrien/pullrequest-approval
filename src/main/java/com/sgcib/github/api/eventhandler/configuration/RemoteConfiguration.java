@@ -13,8 +13,7 @@ public final class RemoteConfiguration {
 
     private Properties properties;
 
-    private boolean isAutoApprovalAuthorized;
-    private boolean isAutoApprovalAuthorizedSet;
+    private boolean isAutoApprovalAuthorized, isAutoApprovalAuthorizedSet;
 
     public RemoteConfiguration(Properties properties) {
         this.properties = properties;
@@ -36,5 +35,4 @@ public final class RemoteConfiguration {
 
         return isAutoApprovalAuthorized;
     }
-
 }

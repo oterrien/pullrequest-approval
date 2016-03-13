@@ -5,28 +5,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@SpringBootApplication
-public class PullRequestController {
+@RequestMapping("/webhook")
+public class PullRequestApprovalController {
 
-    protected static final Logger logger = LoggerFactory.getLogger(PullRequestController.class);
+    protected static final Logger logger = LoggerFactory.getLogger(PullRequestApprovalController.class);
 
     @Autowired
-    @Lazy(false)
     private EventFactory eventFactory;
 
-    public static void main(String[] args) {
-        SpringApplication.run(PullRequestController.class, args);
-    }
-
-    @RequestMapping(method = RequestMethod.POST, name = "/webhook")
+    @RequestMapping(method = RequestMethod.POST)
     public final ResponseEntity<String> onEvent(@RequestBody String body, @RequestHeader HttpHeaders headers) {
 
         // TODO see the behavior when the repository is forked and private

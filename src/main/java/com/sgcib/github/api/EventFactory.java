@@ -2,21 +2,18 @@ package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.IEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public final class EventFactory {
+public class EventFactory {
 
     @Autowired
-    @Lazy(false)
     private IEventHandler issueCommentEventHandler;
 
     @Autowired
-    @Lazy(false)
     private IEventHandler pullRequestEventHandler;
 
     public Optional<IEventHandler> getEventHandler(String event) {

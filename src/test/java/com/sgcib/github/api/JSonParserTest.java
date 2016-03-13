@@ -1,6 +1,6 @@
-package test.com.sgcib.github.api;
+package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.JSOnService;
+import com.sgcib.github.api.eventhandler.JsonService;
 import com.sgcib.github.api.payloayd.PullRequest;
 import com.sgcib.github.api.payloayd.PullRequestPayload;
 import org.junit.Assert;
@@ -36,11 +36,11 @@ public class JSonParserTest {
 
 
         try {
-            String content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource("pull request event.json").toURI())));
+            String content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource("pull_request_event.json").toURI())));
 
             System.out.println(content);
 
-            PullRequestPayload obj = new JSOnService().parse(PullRequestPayload.class, content);
+            PullRequestPayload obj = new JsonService().parse(content, PullRequestPayload.class);
 
             Assert.assertEquals("opened", obj.getAction());
         } catch (IOException | URISyntaxException e) {
