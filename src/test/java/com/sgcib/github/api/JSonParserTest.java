@@ -31,23 +31,7 @@ public class JSonParserTest {
         System.out.println(result);
     }
 
-    @Test
-    public void testParsing() {
 
-
-        try {
-            String content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource("pull_request_event.json").toURI())));
-
-            System.out.println(content);
-
-            PullRequestPayload obj = new JsonService().parse(content, PullRequestPayload.class);
-
-            Assert.assertEquals("opened", obj.getAction());
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-            Assert.fail("Exception");
-        }
-    }
 
     @Test
     public void testLinkedHashMap() {

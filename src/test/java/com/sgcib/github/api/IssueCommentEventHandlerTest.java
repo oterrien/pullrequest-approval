@@ -48,12 +48,12 @@ public class IssueCommentEventHandlerTest {
 
         String eventType = "issue_comment";
 
-        when(eventFactoryMock.getEventHandler(eventType)).thenReturn(Optional.empty());
+        //when(eventFactoryMock.getEventHandler(eventType)).thenReturn(Optional.empty());
 
 
-        mockMvc.perform(post("/webhook").
+        /*mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType));*/
 
 
     }
