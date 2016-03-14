@@ -1,0 +1,14 @@
+[
+  {
+    "state": "pending",
+    "description": "Pull request is waiting to be reviewed",
+    "target_url": "",
+    "context": "manual/pullrequest-approval"
+  },
+  {
+    "state": "success",
+    "description": "my-reviewer has approved Pull request",
+    "target_url": "",
+    "context": "manual/pullrequest-approval"
+  }
+]

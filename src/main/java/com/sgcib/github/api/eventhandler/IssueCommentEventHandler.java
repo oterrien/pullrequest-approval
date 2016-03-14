@@ -85,13 +85,13 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             logger.debug(remoteRepositoryName + " : setting pull request state to '" + state.getState() + "'");
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
-        PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName);
+        PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName); // already executed --> find a threadsafe way to reuse the previous call
 
         if (state == Status.State.SUCCESS
                 && configuration.isRemoteConfigurationChecked()
                 && event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
 
-            if (!isAutoApprovementAuthorized(event.getRepository(), remoteRepositoryName)) {
+            if (!isAutoApprovementAuthorized(event.getRepository())) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(remoteRepositoryName + " : same user cannot approve pull request");
                 }
@@ -109,7 +109,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         return communicationService.post(statusesUrl, status, remoteRepositoryName);
     }
 
-    private boolean isAutoApprovementAuthorized(Repository repository, String remoteRepositoryName) throws EventHandlerException {
+    private boolean isAutoApprovementAuthorized(Repository repository) throws EventHandlerException {
 
         Result result = new Result();
         getRemoteConfiguration(repository).ifPresent(p -> result.setAutoApprovalAuthorized(p.isAutoApprovalAuthorized()));

@@ -1,0 +1,24 @@
+{
+  "action": "created",
+  "issue": {
+    "url": "https://api.github.com/repos/my-owner/my-repository/issues/0",
+    "id": 139393240,
+    "pull_request": {
+      "url": "https://api.github.com/repos/my-owner/my-repository/pulls/0",
+	  "html_url": "https://github.com/my-owner/my-repository/pull/0"
+    }
+  },
+  "comment": {
+    "user": {
+      "login": "my-owner",
+      "id": 15003331
+    },
+    "body": "approved"
+  },
+  "repository": {
+    "name": "my-repository",
+	"pulls_url": "https://api.github.com/repos/my-owner/my-repository/pulls{/number}",
+    "contents_url": "https://api.github.com/repos/my-owner/my-repository/contents/{+path}",
+    "default_branch": "master"
+  }
+}

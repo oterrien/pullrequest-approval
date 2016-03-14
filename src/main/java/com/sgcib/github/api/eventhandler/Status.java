@@ -18,11 +18,11 @@ public class Status implements Serializable {
 
     private String description;
 
-    private String context;
-
     private String targetUrl;
 
-    enum State {
+    private String context;
+
+    public enum State {
         SUCCESS("success"), ERROR("error"), PENDING("pending"), FAILURE("failure"), NONE("");
 
         public static final String CONTEXT = "manual/pullrequest-approval";

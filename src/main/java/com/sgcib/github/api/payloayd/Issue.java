@@ -7,9 +7,9 @@ import java.io.Serializable;
 @Data
 public class Issue implements Serializable {
 
-    private int id;
-
     private String url;
+
+    private int id;
 
     private PullRequest pullRequest;
 }

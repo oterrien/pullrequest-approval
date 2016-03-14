@@ -1,0 +1,6 @@
+{
+  "name": "configuration.properties",
+  "path": ".pullrequest-approval/configuration.properties",
+  "download_url": "https://raw.githubusercontent.com/my-owner/my-repository/my-branch/.pullrequest-approval/configuration.properties",
+  "type": "file"
+}

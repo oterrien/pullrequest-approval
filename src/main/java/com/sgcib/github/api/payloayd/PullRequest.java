@@ -7,12 +7,12 @@ import java.io.Serializable;
 @Data
 public class PullRequest implements Serializable {
 
-    private int id;
-
     private String url;
 
-    private String statusesUrl;
+    private int id;
 
     private User user;
+
+    private String statusesUrl;
 
 }
