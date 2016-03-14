@@ -96,6 +96,6 @@ public final class Configuration {
     }
 
     public enum Type {
-        APPROVEMENT, REJECTION, PENDING, NONE;
+        APPROVEMENT, REJECTION, PENDING, NONE
     }
 }

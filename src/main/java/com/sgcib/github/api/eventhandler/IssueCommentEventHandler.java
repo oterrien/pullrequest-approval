@@ -1,8 +1,8 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.payloayd.IssueCommentPayload;
-import com.sgcib.github.api.payloayd.PullRequest;
-import com.sgcib.github.api.payloayd.Repository;
+import com.sgcib.github.api.json.IssueCommentPayload;
+import com.sgcib.github.api.json.PullRequest;
+import com.sgcib.github.api.json.Repository;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

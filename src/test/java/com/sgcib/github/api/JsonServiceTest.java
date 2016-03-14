@@ -2,7 +2,7 @@ package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.Status;
 import com.sgcib.github.api.eventhandler.Statuses;
-import com.sgcib.github.api.payloayd.PullRequest;
+import com.sgcib.github.api.json.PullRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -27,8 +27,6 @@ public class JsonServiceTest {
     public void test_status_parsing() throws Exception {
 
         final Map<String, String> parameters = new HashMap<>(10);
-        parameters.put("auto_approval.authorized", "true");
-        parameters.put("issue_comment", "approved");
         parameters.put("last_state", "pending");
 
         String str = "{\"statuses\":" + TestUtils.readFile("statuses-test.json", parameters) + "}";
