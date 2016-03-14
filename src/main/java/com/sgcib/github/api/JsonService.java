@@ -1,4 +1,4 @@
-package com.sgcib.github.api.eventhandler;
+package com.sgcib.github.api;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

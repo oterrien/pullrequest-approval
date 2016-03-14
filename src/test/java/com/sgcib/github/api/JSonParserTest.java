@@ -1,16 +1,9 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.JsonService;
 import com.sgcib.github.api.payloayd.PullRequest;
-import com.sgcib.github.api.payloayd.PullRequestPayload;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
