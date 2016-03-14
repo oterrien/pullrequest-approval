@@ -1,4 +1,7 @@
-{  
+{
+  "action": "${action}",
+  "number": 1,
+  "pull_request": {
     "url": "https://api.github.com/repos/my-owner/my-repository/pulls/0",
     "id": 62136249,
     "user": {
@@ -6,4 +9,11 @@
       "id": 15003331
     },
     "statuses_url": "https://api.github.com/repos/my-owner/my-repository/statuses/00000000000000000000000000000000000"
+  },
+  "repository": {
+    "name": "my-repository",
+    "pulls_url": "https://api.github.com/repos/my-owner/my-repository/pulls{/number}",
+    "contents_url": "https://api.github.com/repos/my-owner/my-repository/contents/{+path}",
+    "default_branch": "master"
+  }
 }

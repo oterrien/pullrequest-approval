@@ -1,13 +1,13 @@
 [
   {
-    "state": "pending",
-    "description": "Pull request is waiting to be reviewed",
+    "state": "${last_state}",
+    "description": "a description",
     "target_url": "",
     "context": "manual/pullrequest-approval"
   },
   {
-    "state": "success",
-    "description": "my-reviewer has approved Pull request",
+    "state": "whatever...",
+    "description": "another description",
     "target_url": "",
     "context": "manual/pullrequest-approval"
   }

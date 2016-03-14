@@ -1,9 +1,9 @@
-{  
-    "url": "https://api.github.com/repos/my-owner/my-repository/pulls/0",
-    "id": 62136249,
-    "user": {
-      "login": "my-owner",
-      "id": 15003331
-    },
-    "statuses_url": "https://api.github.com/repos/my-owner/my-repository/statuses/00000000000000000000000000000000000"
+{
+  "url": "https://api.github.com/repos/my-owner/my-repository/pulls/0",
+  "id": 62136249,
+  "user": {
+    "login": "my-owner",
+    "id": 15003331
+  },
+  "statuses_url": "https://api.github.com/repos/my-owner/my-repository/statuses/00000000000000000000000000000000000"
 }

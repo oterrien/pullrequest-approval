@@ -13,7 +13,7 @@
       "login": "my-owner",
       "id": 15003331
     },
-    "body": "approved"
+    "body": "${issue_comment}"
   },
   "repository": {
     "name": "my-repository",
