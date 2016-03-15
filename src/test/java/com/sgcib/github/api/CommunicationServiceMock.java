@@ -1,40 +1,35 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.eventhandler.ICommunicationService;
 import com.sgcib.github.api.eventhandler.Status;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class CommunicationServiceMock implements ICommunicationService {
 
+    @Getter @Setter
     private Map<String, String> parameters;
 
-    public CommunicationServiceMock() {
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-    }
+    @Getter
+    private Status status;
 
     @Override
-    public <T> T get(String url, Class<T> type) throws EventHandlerException {
-        String result = get(url);
+    public <T> T get(String url, Class<T> type) {
         try {
-            return JsonUtils.parse(result, type);
-        } catch (IOException e) {
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while parsing result from " + url, result);
+            return JsonUtils.parse(get(url), type);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public String get(@NotNull String url) {
+    public String get(String url) {
 
         try {
             if (url.contains("https://api.github.com/repos/my-owner/my-repository/pulls")) {
@@ -69,8 +64,5 @@ public class CommunicationServiceMock implements ICommunicationService {
         }
         return HttpStatus.NOT_IMPLEMENTED;
     }
-
-    @Getter
-    private Status status;
 
 }

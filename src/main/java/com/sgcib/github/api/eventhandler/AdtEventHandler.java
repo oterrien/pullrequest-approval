@@ -64,11 +64,9 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
 
         Optional<Status> status = findLastStatus(statusesUrl);
 
-        if (status.isPresent()) {
-            return Status.State.of(status.get().getState());
-        }
-
-        return Status.State.PENDING;
+        return status.isPresent() ?
+                Status.State.of(status.get().getState()) :
+                Status.State.PENDING;
     }
 
     private Optional<Status> findLastStatus(String statusesUrl) {

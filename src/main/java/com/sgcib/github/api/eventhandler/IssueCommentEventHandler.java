@@ -43,7 +43,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                     if (logger.isDebugEnabled()) {
                         logger.debug("Pull request is not yet approved -> set status to success");
                     }
-                    return postStatus(event, Status.State.SUCCESS);
+                    return tryPostStatus(event, Status.State.SUCCESS);
                 } else {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Pull request is currently approved -> no change");
@@ -55,7 +55,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                     if (logger.isDebugEnabled()) {
                         logger.debug("Pull request is not yet rejected -> set status to error");
                     }
-                    return postStatus(event, Status.State.ERROR);
+                    return tryPostStatus(event, Status.State.ERROR);
                 } else {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Pull request is currently rejected -> no change");
@@ -67,7 +67,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                     if (logger.isDebugEnabled()) {
                         logger.debug("Pull request is not yet pending -> set status to pending");
                     }
-                    return postStatus(event, Status.State.PENDING);
+                    return tryPostStatus(event, Status.State.PENDING);
                 } else {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Pull request is currently pending -> no change");
@@ -79,7 +79,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         return HttpStatus.OK;
     }
 
-    private HttpStatus postStatus(IssueCommentPayload event, Status.State state) throws EventHandlerException {
+    private HttpStatus tryPostStatus(IssueCommentPayload event, Status.State state) throws EventHandlerException {
 
         if (logger.isDebugEnabled())
             logger.debug("Setting pull request state to '" + state.getState() + "'");
@@ -96,10 +96,10 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                     logger.warn("Same user cannot approve pull request");
                 }
                 return HttpStatus.UNAUTHORIZED;
-            } else {
-                if (logger.isInfoEnabled()) {
-                    logger.info("OK, same user is able to approve his own pull request");
-                }
+            }
+
+            if (logger.isInfoEnabled()) {
+                logger.info("OK, same user is able to approve his own pull request");
             }
         }
 
