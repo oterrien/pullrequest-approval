@@ -1,11 +1,12 @@
 package com.sgcib.github.api.eventhandler;
 
+import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import com.sgcib.github.api.json.IssueCommentPayload;
 import com.sgcib.github.api.json.PullRequest;
 import com.sgcib.github.api.json.Repository;
-import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -14,63 +15,62 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
     private static final Logger logger = LoggerFactory.getLogger(IssueCommentEventHandler.class);
 
-    public IssueCommentEventHandler() {
-        super(IssueCommentPayload.class);
+    @Autowired
+    public IssueCommentEventHandler(Configuration configuration, ICommunicationService communicationService) {
+        super(IssueCommentPayload.class, configuration, communicationService);
     }
 
     @Override
     public HttpStatus handle(IssueCommentPayload event) throws EventHandlerException {
 
-        String remoteRepositoryName = event.getRepository().getName();
-
         if (logger.isInfoEnabled()) {
-            logger.info(remoteRepositoryName + " : event received");
+            logger.info("Event received");
         }
 
         String comment = event.getComment().getBody().trim().toLowerCase();
 
         if (logger.isDebugEnabled()) {
-            logger.debug(remoteRepositoryName + " : issue comment is '" + comment + "'");
+            logger.debug("Issue comment is '" + comment + "'");
         }
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
-        PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName);
-        Status.State currentState = getCurrentState(pullRequest.getStatusesUrl(), remoteRepositoryName);
+        PullRequest pullRequest = getPullRequest(pullUrl);
+        Status.State currentState = getCurrentState(pullRequest.getStatusesUrl());
 
         switch (configuration.getType(comment)) {
             case APPROVEMENT:
                 if (currentState != Status.State.SUCCESS) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(remoteRepositoryName + " : pull request is not yet approved -> set status to success");
+                        logger.debug("Pull request is not yet approved -> set status to success");
                     }
-                    return postStatus(event, Status.State.SUCCESS, remoteRepositoryName);
+                    return postStatus(event, Status.State.SUCCESS);
                 } else {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(remoteRepositoryName + " : pull request is currently approved -> no change");
+                        logger.debug("Pull request is currently approved -> no change");
                     }
                 }
                 break;
             case REJECTION:
                 if (currentState != Status.State.ERROR && currentState != Status.State.FAILURE) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(remoteRepositoryName + " : pull request is not yet rejected -> set status to error");
+                        logger.debug("Pull request is not yet rejected -> set status to error");
                     }
-                    return postStatus(event, Status.State.ERROR, remoteRepositoryName);
+                    return postStatus(event, Status.State.ERROR);
                 } else {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(remoteRepositoryName + " : pull request is currently rejected -> no change");
+                        logger.debug("Pull request is currently rejected -> no change");
                     }
                 }
                 break;
             case PENDING:
                 if (currentState != Status.State.PENDING) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(remoteRepositoryName + " : pull request is not yet pending -> set status to pending");
+                        logger.debug("Pull request is not yet pending -> set status to pending");
                     }
-                    return postStatus(event, Status.State.PENDING, remoteRepositoryName);
+                    return postStatus(event, Status.State.PENDING);
                 } else {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(remoteRepositoryName + " : pull request is currently pending -> no change");
+                        logger.debug("Pull request is currently pending -> no change");
                     }
                 }
                 break;
@@ -79,13 +79,13 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         return HttpStatus.OK;
     }
 
-    private HttpStatus postStatus(IssueCommentPayload event, Status.State state, String remoteRepositoryName) throws EventHandlerException {
+    private HttpStatus postStatus(IssueCommentPayload event, Status.State state) throws EventHandlerException {
 
         if (logger.isDebugEnabled())
-            logger.debug(remoteRepositoryName + " : setting pull request state to '" + state.getState() + "'");
+            logger.debug("Setting pull request state to '" + state.getState() + "'");
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
-        PullRequest pullRequest = getPullRequest(pullUrl, remoteRepositoryName); // already executed --> find a threadsafe way to reuse the previous call
+        PullRequest pullRequest = getPullRequest(pullUrl); // already executed --> find a threadsafe way to reuse the previous call
 
         if (state == Status.State.SUCCESS
                 && configuration.isRemoteConfigurationChecked()
@@ -93,12 +93,12 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
             if (!isAutoApprovementAuthorized(event.getRepository())) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(remoteRepositoryName + " : same user cannot approve pull request");
+                    logger.warn("Same user cannot approve pull request");
                 }
                 return HttpStatus.UNAUTHORIZED;
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info(remoteRepositoryName + " : OK, same user is able to approve his own pull request");
+                    logger.info("OK, same user is able to approve his own pull request");
                 }
             }
         }
@@ -106,29 +106,22 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         String statusesUrl = pullRequest.getStatusesUrl();
         Status status = state.createStatus(event.getComment().getUser().getLogin());
 
-        return communicationService.post(statusesUrl, status, remoteRepositoryName);
+        return communicationService.post(statusesUrl, status);
     }
 
     private boolean isAutoApprovementAuthorized(Repository repository) throws EventHandlerException {
 
-        Result result = new Result();
-        getRemoteConfiguration(repository).ifPresent(p -> result.setAutoApprovalAuthorized(p.isAutoApprovalAuthorized()));
-
-        return result.isAutoApprovalAuthorized();
+        return getRemoteConfiguration(repository).
+                map(remoteConfiguration -> remoteConfiguration.isAutoApprovalAuthorized()).
+                orElse(false);
     }
 
-    @Data
-    private class Result {
-
-        private boolean isAutoApprovalAuthorized;
-    }
-
-    private PullRequest getPullRequest(String url, String remoteRepositoryName) throws EventHandlerException {
+    private PullRequest getPullRequest(String url) throws EventHandlerException {
 
         if (logger.isDebugEnabled()) {
-            logger.debug(remoteRepositoryName + " : retrieving pull request : " + url);
+            logger.debug("Retrieving pull request : " + url);
         }
 
-        return communicationService.get(url, remoteRepositoryName, PullRequest.class);
+        return communicationService.get(url, PullRequest.class);
     }
 }

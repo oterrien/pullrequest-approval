@@ -1,15 +1,12 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.CommunicationService;
 import com.sgcib.github.api.eventhandler.Status;
 import lombok.Data;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -22,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 
 @ActiveProfiles("test")
@@ -37,54 +33,22 @@ public class PullRequestApprovalControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @Autowired
-    private CommunicationService communicationService;
+    private CommunicationServiceMock communicationService;
+
+    private Map<String, String> parameters;
 
     @Before
     public void setup() throws Exception {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+        parameters = new HashMap<>(10);
+        parameters.put("auto_approval.authorized", "true");
+        parameters.put("issue_comment", "approved");
+        parameters.put("last_state", "pending");
     }
 
     @Test
     public void issueEventComment_approved_ShouldPostSuccessStatus() throws Exception {
-
-        final Map<String, String> parameters = new HashMap<>(10);
-        parameters.put("auto_approval.authorized", "true");
-        parameters.put("issue_comment", "approved");
-        parameters.put("last_state", "pending");
-
-        final Result result = new Result();
-
-        // Mock communicationService
-        {
-            when(communicationService.get(anyString(), anyString(), any(Class.class))).
-                    thenCallRealMethod();
-
-            String pullsUrl = "https://api.github.com/repos/my-owner/my-repository/pulls";
-            String pullsUrlResult = TestUtils.readFile("pull-request-test.json", parameters);
-            when(communicationService.get(contains(pullsUrl), anyString())).
-                    thenReturn(pullsUrlResult);
-
-            String statusesUrl = "https://api.github.com/repos/my-owner/my-repository/statuses";
-            String statusesUrlResult = TestUtils.readFile("statuses-test.json", parameters);
-            when(communicationService.get(Mockito.contains(statusesUrl), anyString())).
-                    thenReturn(statusesUrlResult);
-
-            String contentsUrl = "https://api.github.com/repos/my-owner/my-repository/contents";
-            String contentsUrlResult = TestUtils.readFile("remote-config-files-test.json", parameters);
-            when(communicationService.get(Mockito.contains(contentsUrl), anyString())).
-                    thenReturn(contentsUrlResult);
-
-            String downloadUrl = "https://raw.githubusercontent.com/my-owner/my-repository/my-branch";
-            String downloadUrlResult = TestUtils.readFile("configuration-test.properties", parameters);
-            when(communicationService.get(contains(downloadUrl), anyString())).
-                    thenReturn(downloadUrlResult);
-
-            when(communicationService.post(contains(statusesUrl), any(Status.class), anyString())).
-                    then(invocationOnMock -> {
-                        result.setStatus(invocationOnMock.getArgumentAt(1, Status.class));
-                        return HttpStatus.OK;
-                    });
-        }
 
         String content = TestUtils.readFile("issue-comment-event-test.json", parameters);
         String eventType = "issue_comment";
@@ -95,14 +59,8 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = result.getStatus();
+        Status status = communicationService.getStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getState());
-    }
-
-    @Data
-    public class Result {
-
-        private Status status;
     }
 }

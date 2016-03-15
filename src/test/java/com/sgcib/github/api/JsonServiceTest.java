@@ -15,7 +15,7 @@ public class JsonServiceTest {
     @Test
     public void test_pull_request_parsing() throws Exception {
 
-        PullRequest pullRequest = new JsonService().parse(TestUtils.readFile("pull-request-test.json"), PullRequest.class);
+        PullRequest pullRequest = JsonUtils.parse(TestUtils.readFile("pull-request-test.json"), PullRequest.class);
 
         Assertions.assertThat(pullRequest).isNotNull();
         Assertions.assertThat(pullRequest.getUrl()).contains("https://api.github.com/repos/my-owner/my-repository/pulls");
@@ -30,7 +30,7 @@ public class JsonServiceTest {
         parameters.put("last_state", "pending");
 
         String str = "{\"statuses\":" + TestUtils.readFile("statuses-test.json", parameters) + "}";
-        Statuses statuses = new JsonService().parse(str, Statuses.class);
+        Statuses statuses = JsonUtils.parse(str, Statuses.class);
 
         Assertions.assertThat(statuses).isNotNull();
         Optional<Status> status = statuses.getStatuses().stream().findFirst();

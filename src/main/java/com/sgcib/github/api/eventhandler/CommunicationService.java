@@ -1,6 +1,6 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.JsonService;
+import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,23 +14,25 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 
 @Service
-public class CommunicationService {
+public class CommunicationService implements ICommunicationService{
 
     private static final Logger logger = LoggerFactory.getLogger(CommunicationService.class);
 
-    @Autowired
     protected Configuration handlerConfiguration;
-
-    @Autowired
-    protected JsonService jsonService;
 
     protected RestTemplate restTemplate = new RestTemplate();
 
-    public <T> HttpStatus post(String url, T object, String remoteRepositoryName) throws EventHandlerException {
+    @Autowired
+    public CommunicationService(Configuration handlerConfiguration) {
+        this.handlerConfiguration = handlerConfiguration;
+    }
+
+    @Override
+    public <T> HttpStatus post(String url, T object) throws EventHandlerException {
 
         try {
             if (logger.isInfoEnabled()) {
-                logger.info(remoteRepositoryName + " : posting " + object.toString() + " to " + url);
+                logger.info("Posting " + object.toString() + " to " + url);
             }
 
             restTemplate.
@@ -39,33 +41,32 @@ public class CommunicationService {
             return HttpStatus.OK;
 
         } catch (RestClientException e) {
-            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST,
-                    remoteRepositoryName + " : error while posting data to " + url, object.toString());
+            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while posting data to " + url, object.toString());
         }
     }
 
-    public String get(String url, String remoteRepositoryName) throws EventHandlerException {
+    @Override
+    public String get(String url) throws EventHandlerException {
 
         if (logger.isInfoEnabled()) {
-            logger.info(remoteRepositoryName + " : getting data from " + url);
+            logger.info("Getting data from " + url);
         }
 
         try {
             return restTemplate.getForObject(url, String.class);
         } catch (RestClientException e) {
-            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST,
-                    remoteRepositoryName + " : error while retrieving data from " + url);
+            throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while retrieving data from " + url);
         }
     }
 
-    public <T> T get(String url, String remoteRepositoryName, Class<T> clazz) throws EventHandlerException {
+    @Override
+    public <T> T get(String url, Class<T> type) throws EventHandlerException {
 
-        String result = get(url, remoteRepositoryName);
+        String result = get(url);
         try {
-            return jsonService.parse(result, clazz);
+            return JsonUtils.parse(result, type);
         } catch (IOException e) {
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY,
-                    remoteRepositoryName + " : error while parsing result from " + url, result);
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while parsing result from " + url, result);
         }
     }
 }

@@ -2,13 +2,15 @@ package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.IEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class EventFactory {
+public class EventHandlerDispatcher{
 
     @Autowired
     private IEventHandler issueCommentEventHandler;
@@ -16,7 +18,7 @@ public class EventFactory {
     @Autowired
     private IEventHandler pullRequestEventHandler;
 
-    public Optional<IEventHandler> getEventHandler(String event) {
+    private Optional<IEventHandler> getEventHandler(String event) {
 
         switch (Event.of(event)) {
             case ISSUE_COMMENT:
@@ -26,6 +28,13 @@ public class EventFactory {
             default:
                 return Optional.empty();
         }
+    }
+
+    public ResponseEntity handle(String event, String body) {
+        return getEventHandler(event)
+                .map(eventHandler -> eventHandler.handle(body))
+                .map(httpStatus -> new ResponseEntity<>(httpStatus.toString(), httpStatus))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED.toString(), HttpStatus.NOT_IMPLEMENTED));
     }
 
     public enum Event {
@@ -39,6 +48,7 @@ public class EventFactory {
         }
 
         public static Event of(final String event) {
+
             return Stream.of(Event.values()).
                     filter(p -> p.event.equals(event)).
                     findFirst().

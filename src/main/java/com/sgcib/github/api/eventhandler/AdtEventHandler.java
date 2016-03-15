@@ -1,12 +1,11 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.JsonService;
+import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.io.ByteArrayInputStream;
@@ -18,30 +17,23 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AdtEventHandler.class);
 
-    private final Class<T> type;
-
-    @Autowired
     protected Configuration configuration;
 
-    @Autowired
-    protected CommunicationService communicationService;
+    protected ICommunicationService communicationService;
 
-    @Autowired
-    protected JsonService jsonService;
+    protected Class<T> type;
 
-    protected AdtEventHandler(Class<T> type) {
+    protected AdtEventHandler(Class<T> type, Configuration configuration, ICommunicationService communicationService) {
         this.type = type;
+        this.configuration = configuration;
+        this.communicationService = communicationService;
     }
 
     @Override
     public final HttpStatus handle(String event) {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(type.getSimpleName() + " event to be processed : " + event);
-        }
-
         try {
-            T obj = jsonService.parse(event, this.type);
+            T obj = JsonUtils.parse(event, type);
             return this.handle(obj);
         } catch (IOException e) {
             return processError(new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Unable to parse the event", event));
@@ -59,18 +51,18 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         }
 
         if (logger.isDebugEnabled() && e.getEvent() != null) {
-            logger.error(type.getSimpleName() + " event in error : " + e.getEvent());
+            logger.error("event in error : " + e.getEvent());
         }
         return e.getHttpStatus();
     }
 
-    protected Status.State getCurrentState(String statusesUrl, String remoteRepositoryName) {
+    protected Status.State getCurrentState(String statusesUrl) {
 
         if (logger.isDebugEnabled()) {
-            logger.debug(remoteRepositoryName + " : finding whether current status is rejected or not");
+            logger.debug("Finding whether current status is rejected or not");
         }
 
-        Optional<Status> status = findLastStatus(statusesUrl, remoteRepositoryName);
+        Optional<Status> status = findLastStatus(statusesUrl);
 
         if (status.isPresent()) {
             return Status.State.of(status.get().getState());
@@ -79,15 +71,15 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         return Status.State.PENDING;
     }
 
-    private Optional<Status> findLastStatus(String statusesUrl, String remoteRepositoryName) {
+    private Optional<Status> findLastStatus(String statusesUrl) {
         try {
 
-            String str = communicationService.get(statusesUrl, remoteRepositoryName);
+            String str = communicationService.get(statusesUrl);
             str = "{\"statuses\":" + str + "}";
-            Statuses statuses = new JsonService().parse(str, Statuses.class);
+            Statuses statuses = JsonUtils.parse(str, Statuses.class);
             return statuses.getStatuses().stream().filter(p -> p.getContext().equals(Status.State.CONTEXT)).findFirst();
         } catch (Exception e) {
-            logger.warn(remoteRepositoryName + " : unable to retrieve remote configuration file", e);
+            logger.warn("Unable to retrieve remote configuration file", e);
             return Optional.empty();
         }
     }
@@ -99,19 +91,19 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         contentsUrl = contentsUrl.replace("{+path}", configuration.getRemoteConfigurationPath() + "?ref=" + defaultBranch);
 
         try {
-            File file = jsonService.parse(communicationService.get(contentsUrl, repository.getName()), File.class);
-            String content = communicationService.get(file.getDownloadUrl(), repository.getName());
+            File file = JsonUtils.parse(communicationService.get(contentsUrl), File.class);
+            String content = communicationService.get(file.getDownloadUrl());
 
             try {
                 Properties prop = new Properties();
                 prop.load(new ByteArrayInputStream(content.getBytes()));
                 return Optional.of(new RemoteConfiguration(prop));
             } catch (IOException e) {
-                logger.error(repository.getName() + " : error while parsing remote configuration content " + content, e);
+                logger.error("Error while parsing remote configuration content " + content, e);
                 return Optional.empty();
             }
         } catch (Exception e) {
-            logger.error(repository.getName() + " : unable to retrieve remote configuration file", e);
+            logger.error("Unable to retrieve remote configuration file", e);
             return Optional.empty();
         }
     }
