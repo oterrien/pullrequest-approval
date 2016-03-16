@@ -4,6 +4,7 @@ import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.IssueCommentPayload;
 import com.sgcib.github.api.json.PullRequest;
+import com.sgcib.github.api.json.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

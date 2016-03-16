@@ -1,13 +1,12 @@
 package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.ICommunicationService;
-import com.sgcib.github.api.eventhandler.Status;
+import com.sgcib.github.api.json.Status;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service

@@ -1,8 +1,8 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.Status;
-import com.sgcib.github.api.eventhandler.Statuses;
 import com.sgcib.github.api.json.PullRequest;
+import com.sgcib.github.api.json.Status;
+import com.sgcib.github.api.json.Statuses;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -37,5 +37,7 @@ public class JsonServiceTest {
         Assertions.assertThat(status.isPresent()).isTrue();
         Assertions.assertThat(status.get().getState()).isEqualTo("pending");
         Assertions.assertThat(status.get().getContext()).isEqualTo("manual/pullrequest-approval");
+
+        System.out.println(JsonUtils.serialize(status.get()));
     }
 }

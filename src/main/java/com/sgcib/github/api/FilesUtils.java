@@ -13,7 +13,6 @@ import java.util.Map;
 public final class FilesUtils {
 
     private FilesUtils() {
-
     }
 
     public static String readFileInClasspath(@NotNull String fileName) throws Exception {

@@ -1,4 +1,4 @@
-package com.sgcib.github.api.eventhandler;
+package com.sgcib.github.api.json;
 
 import lombok.Data;
 

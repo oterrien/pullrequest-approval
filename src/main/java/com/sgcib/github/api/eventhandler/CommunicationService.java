@@ -36,11 +36,11 @@ public class CommunicationService implements ICommunicationService{
             }
 
             restTemplate.
-                    postForObject(url, new HttpEntity<>(object, this.handlerConfiguration.getHttpHeaders()), String.class);
+                    postForObject(url, new HttpEntity<>(JsonUtils.serialize(object), this.handlerConfiguration.getHttpHeaders()), String.class);
 
             return HttpStatus.OK;
 
-        } catch (RestClientException e) {
+        } catch (IOException  |RestClientException e) {
             throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while posting data to " + url, object.toString());
         }
     }

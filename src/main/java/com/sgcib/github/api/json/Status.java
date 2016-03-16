@@ -1,10 +1,11 @@
-package com.sgcib.github.api.eventhandler;
+package com.sgcib.github.api.json;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sgcib.github.api.eventhandler.IssueCommentEventHandler;
 import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Data
-public final class Status implements Serializable {
+public class Status implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(IssueCommentEventHandler.class);
 
@@ -22,6 +23,7 @@ public final class Status implements Serializable {
 
     private String description;
 
+    @JsonProperty("target_url")
     private String targetUrl;
 
     private String context;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 public final class JsonUtils {
@@ -17,13 +18,14 @@ public final class JsonUtils {
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private JsonUtils(){}
+    private JsonUtils() {
+    }
 
-    public static <T> T parse(String content, Class<T> type) throws IOException {
+    public static <T> T parse(@NotNull String content, @NotNull Class<T> type) throws IOException {
         return MAPPER.readValue(content, type);
     }
 
-    public static <T> String serialize(T obj) throws IOException {
+    public static <T> String serialize(@NotNull T obj) throws IOException {
         return MAPPER.writeValueAsString(obj);
     }
 }
