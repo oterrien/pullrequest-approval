@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Properties;
 
 public abstract class AdtEventHandler<T> implements IEventHandler {
 
@@ -75,9 +73,11 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
             String str = communicationService.get(statusesUrl);
             str = "{\"statuses\":" + str + "}";
             Statuses statuses = JsonUtils.parse(str, Statuses.class);
-            return statuses.getStatuses().stream().filter(p -> p.getContext().equals(Status.State.CONTEXT)).findFirst();
+            return statuses.getStatuses().stream().filter(p -> p.getContext().equals(configuration.getStatusContext())).findFirst();
         } catch (Exception e) {
-            logger.warn("Unable to retrieve remote configuration file", e);
+            if (logger.isErrorEnabled()) {
+                logger.error("Unable to retrieve remote configuration file", e);
+            }
             return Optional.empty();
         }
     }
@@ -87,21 +87,14 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
         String defaultBranch = repository.getDefaultBranch();
         String contentsUrl = repository.getContentsUrl();
         contentsUrl = contentsUrl.replace("{+path}", configuration.getRemoteConfigurationPath() + "?ref=" + defaultBranch);
-
         try {
             File file = JsonUtils.parse(communicationService.get(contentsUrl), File.class);
             String content = communicationService.get(file.getDownloadUrl());
-
-            try {
-                Properties prop = new Properties();
-                prop.load(new ByteArrayInputStream(content.getBytes()));
-                return Optional.of(new RemoteConfiguration(prop));
-            } catch (IOException e) {
-                logger.error("Error while parsing remote configuration content " + content, e);
-                return Optional.empty();
-            }
+            return Optional.of(new RemoteConfiguration(configuration, content));
         } catch (Exception e) {
-            logger.error("Unable to retrieve remote configuration file", e);
+            if (logger.isErrorEnabled()) {
+                logger.error("Unable to initialize remote configuration", e);
+            }
             return Optional.empty();
         }
     }

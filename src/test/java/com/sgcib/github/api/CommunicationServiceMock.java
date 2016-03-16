@@ -33,19 +33,19 @@ public class CommunicationServiceMock implements ICommunicationService {
 
         try {
             if (url.contains("https://api.github.com/repos/my-owner/my-repository/pulls")) {
-                return TestUtils.readFile("pull-request-test.json", parameters);
+                return FilesUtils.readFileInClasspath("pull-request-test.json", parameters);
             }
 
             if (url.contains("https://api.github.com/repos/my-owner/my-repository/statuses")) {
-                return TestUtils.readFile("statuses-test.json", parameters);
+                return FilesUtils.readFileInClasspath("statuses-test.json", parameters);
             }
 
             if (url.contains("https://api.github.com/repos/my-owner/my-repository/contents")) {
-                return TestUtils.readFile("remote-config-files-test.json", parameters);
+                return FilesUtils.readFileInClasspath("remote-config-files-test.json", parameters);
             }
 
             if (url.contains("https://raw.githubusercontent.com/my-owner/my-repository/my-branch")) {
-                return TestUtils.readFile("configuration-test.properties", parameters);
+                return FilesUtils.readFileInClasspath("configuration-test.properties", parameters);
             }
 
             return null;

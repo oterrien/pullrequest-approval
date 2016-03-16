@@ -1,5 +1,6 @@
 package com.sgcib.github.api;
 
+import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/webhook")
@@ -17,10 +24,15 @@ public class PullRequestApprovalController {
     @Autowired
     private EventHandlerDispatcher eventHandlerDispatcher;
 
+    @Autowired
+    private Configuration configuration;
+
     @RequestMapping(method = RequestMethod.POST)
     public final ResponseEntity<String> onEvent(@RequestBody String body, @RequestHeader HttpHeaders headers) {
 
         // TODO see the behavior when the repository is forked and private
+
+
 
         String event = headers.getFirst("x-github-event");
 
@@ -28,6 +40,12 @@ public class PullRequestApprovalController {
             logger.info("Received event type '" + event + "'");
 
         return eventHandlerDispatcher.handle(event, body);
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public final ResponseEntity<String> getParameters() {
+
+        return configuration.getIndexPage();
     }
 }
 

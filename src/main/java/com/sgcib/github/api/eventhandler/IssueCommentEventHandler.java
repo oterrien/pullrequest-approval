@@ -1,14 +1,16 @@
 package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.eventhandler.configuration.Configuration;
+import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.IssueCommentPayload;
 import com.sgcib.github.api.json.PullRequest;
-import com.sgcib.github.api.json.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayload> implements IEventHandler {
@@ -82,16 +84,18 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
     private HttpStatus tryPostStatus(IssueCommentPayload event, Status.State state) throws EventHandlerException {
 
         if (logger.isDebugEnabled())
-            logger.debug("Setting pull request state to '" + state.getState() + "'");
+            logger.debug("Setting pull request state to '" + state.getValue() + "'");
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
         PullRequest pullRequest = getPullRequest(pullUrl); // already executed --> find a threadsafe way to reuse the previous call
+
+        Optional<RemoteConfiguration> remoteConfiguration = getRemoteConfiguration(event.getRepository());
 
         if (state == Status.State.SUCCESS
                 && configuration.isRemoteConfigurationChecked()
                 && event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
 
-            if (!isAutoApprovementAuthorized(event.getRepository())) {
+            if (!isAutoApprovementAuthorized(remoteConfiguration)) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Same user cannot approve pull request");
                 }
@@ -104,15 +108,14 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         }
 
         String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = state.createStatus(event.getComment().getUser().getLogin());
+        Status status = new Status(state, event.getComment().getUser().getLogin(), configuration, remoteConfiguration);
 
         return communicationService.post(statusesUrl, status);
     }
 
-    private boolean isAutoApprovementAuthorized(Repository repository) throws EventHandlerException {
+    private boolean isAutoApprovementAuthorized(Optional<RemoteConfiguration> remoteConfiguration) throws EventHandlerException {
 
-        return getRemoteConfiguration(repository).
-                map(remoteConfiguration -> remoteConfiguration.isAutoApprovalAuthorized()).
+        return remoteConfiguration.map(conf -> conf.isAutoApprovalAuthorized()).
                 orElse(false);
     }
 

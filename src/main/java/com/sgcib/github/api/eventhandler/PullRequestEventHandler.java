@@ -1,6 +1,7 @@
 package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.eventhandler.configuration.Configuration;
+import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.PullRequest;
 import com.sgcib.github.api.json.PullRequestPayload;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
@@ -40,7 +42,7 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
                 if (logger.isDebugEnabled()) {
                     logger.debug("Pull request has just been opened -> set status to pending");
                 }
-                return this.postStatus(event, Status.State.PENDING);
+                return this.tryPostStatus(event, Status.State.PENDING);
             case SYNCHRONIZED:
 
                 String statusesUrl = event.getPullRequest().getStatusesUrl();
@@ -61,7 +63,7 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
                         if (logger.isDebugEnabled()) {
                             logger.debug("Pull request is currently approved -> reset status to pending");
                         }
-                        return this.postStatus(event, Status.State.PENDING);
+                        return this.tryPostStatus(event, Status.State.PENDING);
                 }
                 break;
         }
@@ -69,15 +71,17 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
         return HttpStatus.OK;
     }
 
-    private HttpStatus postStatus(PullRequestPayload event, Status.State state) throws EventHandlerException {
+    private HttpStatus tryPostStatus(PullRequestPayload event, Status.State state) throws EventHandlerException {
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Setting pull request state to '" + state.getState() + "'");
+            logger.debug("Setting pull request state to '" + state.getValue() + "'");
         }
 
         PullRequest pullRequest = event.getPullRequest();
         String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = state.createStatus(pullRequest.getUser().getLogin());
+        Optional<RemoteConfiguration> remoteConfiguration = getRemoteConfiguration(event.getRepository());
+
+        Status status = new Status(state, pullRequest.getUser().getLogin(), configuration, remoteConfiguration);
 
         return communicationService.post(statusesUrl, status);
     }

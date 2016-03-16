@@ -63,7 +63,7 @@ public class PullRequestApprovalControllerTest {
 
         communicationServiceMock.setParameters(parameter);
 
-        String content = TestUtils.readFile("issue-comment-event-test.json", parameter);
+        String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = "issue_comment";
 
         // Simulate a calling of webservice
@@ -74,7 +74,7 @@ public class PullRequestApprovalControllerTest {
         // Assertions
         Status status = communicationServiceMock.getStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getState());
+        assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class PullRequestApprovalControllerTest {
 
         communicationServiceMock.setParameters(parameter);
 
-        String content = TestUtils.readFile("issue-comment-event-test.json", parameter);
+        String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = "issue_comment";
 
         // Simulate a calling of webservice
@@ -97,7 +97,7 @@ public class PullRequestApprovalControllerTest {
         // Assertions
         Status status = communicationServiceMock.getStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getState());
+        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.UNAUTHORIZED.toString())));
     }
 
@@ -110,7 +110,7 @@ public class PullRequestApprovalControllerTest {
 
         communicationServiceMock.setParameters(parameter);
 
-        String content = TestUtils.readFile("issue-comment-event-test.json", parameter);
+        String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = "issue_comment";
 
         // Simulate a calling of webservice
@@ -121,7 +121,7 @@ public class PullRequestApprovalControllerTest {
         // Assertions
         Status status = communicationServiceMock.getStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.ERROR.getState());
+        assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
     }
 
@@ -134,7 +134,7 @@ public class PullRequestApprovalControllerTest {
 
         communicationServiceMock.setParameters(parameter);
 
-        String content = TestUtils.readFile("issue-comment-event-test.json", parameter);
+        String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = "issue_comment";
 
         // Simulate a calling of webservice
@@ -145,7 +145,7 @@ public class PullRequestApprovalControllerTest {
         // Assertions
         Status status = communicationServiceMock.getStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getState());
+        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
     }
 
@@ -156,7 +156,7 @@ public class PullRequestApprovalControllerTest {
 
         communicationServiceMock.setParameters(parameter);
 
-        String content = TestUtils.readFile("pull-request-event-test.json", parameter);
+        String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
         String eventType = "pull_request";
 
         // Simulate a calling of webservice
@@ -167,7 +167,7 @@ public class PullRequestApprovalControllerTest {
         // Assertions
         Status status = communicationServiceMock.getStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getState());
+        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
     }
 
@@ -179,7 +179,7 @@ public class PullRequestApprovalControllerTest {
 
         communicationServiceMock.setParameters(parameter);
 
-        String content = TestUtils.readFile("pull-request-event-test.json", parameter);
+        String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
         String eventType = "pull_request";
 
         // Simulate a calling of webservice
@@ -190,7 +190,7 @@ public class PullRequestApprovalControllerTest {
         // Assertions
         Status status = communicationServiceMock.getStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getState());
+        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
     }
 }
