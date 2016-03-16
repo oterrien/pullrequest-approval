@@ -42,7 +42,7 @@ public class Status implements Serializable {
 
     private static String computeTargetUrl(Optional<RemoteConfiguration>  remoteConfiguration) {
         return remoteConfiguration.
-                map(conf -> conf.getPayloadUrl().orElse(StringUtils.EMPTY)).
+                map(conf -> conf.getPayloadUrl()).
                 orElse(StringUtils.EMPTY);
     }
 
@@ -57,12 +57,12 @@ public class Status implements Serializable {
             case FAILURE:
                 return user + " has rejected pull request. Please fix it";
             default:
-                return "";
+                return state.getValue();
         }
     }
 
     public enum State {
-        SUCCESS("success"), ERROR("error"), PENDING("pending"), FAILURE("failure"), NONE("");
+        SUCCESS("success"), ERROR("error"), PENDING("pending"), FAILURE("failure"), NONE(StringUtils.EMPTY);
 
         @Getter
         private String value;

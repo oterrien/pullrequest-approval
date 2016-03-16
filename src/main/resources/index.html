@@ -6,55 +6,46 @@
 <i>And it aims to update a status on the pull request</i>
 <i>The status' context which is updated by current webhook is ${status.context}</i>
 <p>This current webhook reacts for ticked events as follow:</p>
-<table border="1">
-    <tr>
-        <td><h4>Event Type</h4></td>
-        <td><h4>Description</h4></td>
-    </tr>
-    <tr>
-        <td>
-            <h4>Issue Comment</h4>
-            <i>Triggered each time Issue is commented on (a pull request is also an issue)</i>
-        </td>
-        <td>
-            <i>
-                When a user types ${issue.comments.approval.list}, the status is set to SUCCESS
-                <br/>
-                When a user types ${issue.comments.rejection.list}, the status is set to ERROR
-                <br/>
-                When a user types ${issue.comments.pending.list}, the status is set to PENDING
-            </i>
-            <h4>Auto-approvement</h4>
-            <i>
-                Given a user who has created the pull request.
-                <br/>
-                When the same user tries to approve its own pull request, a remote configuration is checked.
-                <br/>
-                This remote configuration is stored in ${remote.configuration.path}
-                <br/>
-                The key ${remote.configuration.auto_approval.authorized.key} defines whether the auto-approval is authorized or not.
-                <h5>What to do if auto-approval is forbidden and I am alone?</h5>
-                It this case, user can types ${issue.comments.autoapproved.list} and provides a comment.
-                <br/>
-                A mail will be sent to all repository owners
-            </i>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <h4>Pull Request</h4>
-            <i>Triggered each time a pull request is opened, closed, assigned, labeled, or synchronized</i>
-        </td>
-        <td>
-            <i>
-                When the pull request is opened, the status is reset to PENDING
-                <br/>
-                When the pull request is reopened, the status is not changed
-                <br/>
-                When the pull request is synchronized (meaning a new commit occurs), the status is reset to PENDING
-            </i>
-        </td>
-    </tr>
-</table>
+<div>
+    <h2>1. Issue Comment</h2>
+    <i>Triggered each time Issue is commented on (a pull request is also an issue)</i>
+    <br/>
+    <i>
+        When a user types ${issue.comments.list.approval}, the status is set to SUCCESS (regarding to auto-approval
+        rules)
+        <br/>
+        When a user types ${issue.comments.list.rejection}, the status is set to ERROR
+        <br/>
+        When a user types ${issue.comments.list.pending}, the status is set to PENDING
+    </i>
+    <h4><i>Auto-approval</i></h4>
+    <i>
+        Given a user who has created the pull request.
+        <br/>
+        When the same user tries to approve its own pull request, a remote configuration is checked to determine whether
+        auto-approval is authorized or not
+        <br/>
+        This remote configuration is stored in ${remote.configuration.path}
+        <br/>
+        The key ${remote.configuration.auto_approval.authorized.key} defines whether the auto-approval is authorized or
+        not.
+        <h5>What to do if auto-approval is forbidden and I am alone?</h5>
+        It this case, user can types ${issue.comments.list.autoapproval} and provides a comment.
+        <br/>
+        A mail will be sent to all repository owners
+    </i>
+</div>
+<div>
+    <h2>2. Pull Request</h2>
+    <i>Triggered each time a pull request is opened, closed, assigned, labeled, or synchronized</i>
+    <br/>
+    <i>
+        When the pull request is opened, the status is reset to PENDING
+        <br/>
+        When the pull request is reopened, the status is not changed
+        <br/>
+        When the pull request is synchronized (meaning a new commit occurs), the status is reset to PENDING
+    </i>
+</div>
 </body>
 </html>

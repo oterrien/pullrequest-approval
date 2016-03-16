@@ -105,10 +105,10 @@ public final class Configuration {
 
         final Map<String, String> param = new HashMap<>(10);
         param.put("status.context", getStatusContext());
-        param.put("issue.comments.approval.list", getApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.rejection.list", getRejectionCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.pending.list", getPendingCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.autoapproved.list", getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
+        param.put("issue.comments.list.approval", getApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
+        param.put("issue.comments.list.rejection", getRejectionCommentsList().stream().collect(Collectors.joining(" or ")));
+        param.put("issue.comments.list.pending", getPendingCommentsList().stream().collect(Collectors.joining(" or ")));
+        param.put("issue.comments.list.auto_approval", getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
         param.put("remote.configuration.auto_approval.authorized.key", getRemoteConfigurationAutoApprovalKey());
         param.put("remote.configuration.path", getRemoteConfigurationPath());
 

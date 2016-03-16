@@ -89,17 +89,23 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
         PullRequest pullRequest = getPullRequest(pullUrl); // already executed --> find a threadsafe way to reuse the previous call
-
         Optional<RemoteConfiguration> remoteConfiguration = getRemoteConfiguration(event.getRepository());
 
-        if (state == Status.State.SUCCESS
-                && configuration.isRemoteConfigurationChecked()
-                && event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
+        if (state == Status.State.SUCCESS && configuration.isRemoteConfigurationChecked() &&
+                event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
 
             if (!isAutoApprovementAuthorized(remoteConfiguration)) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Same user cannot approve pull request");
                 }
+
+                /*
+                    TODO : post a comment :
+                        @${user} : auto-approval is not authorized.
+                        If nobody is available to review your pull request, type ${issue.comments.list.auto_approval} and provide a reason.
+
+                 */
+
                 return HttpStatus.UNAUTHORIZED;
             }
 

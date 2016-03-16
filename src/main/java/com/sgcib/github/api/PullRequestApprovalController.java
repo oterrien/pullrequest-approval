@@ -31,13 +31,11 @@ public class PullRequestApprovalController {
     public final ResponseEntity<String> onEvent(@RequestBody String body, @RequestHeader HttpHeaders headers) {
 
         // TODO see the behavior when the repository is forked and private
-
-
-
         String event = headers.getFirst("x-github-event");
 
-        if (logger.isInfoEnabled())
+        if (logger.isInfoEnabled()){
             logger.info("Received event type '" + event + "'");
+        }
 
         return eventHandlerDispatcher.handle(event, body);
     }

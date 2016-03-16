@@ -1,11 +1,11 @@
 package com.sgcib.github.api.eventhandler.configuration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Properties;
 
 public final class RemoteConfiguration {
@@ -25,7 +25,7 @@ public final class RemoteConfiguration {
     private boolean isAutoApprovalAuthorized;
 
     private boolean isPayloadUrlSet;
-    private Optional<String> payloadUrl;
+    private String payloadUrl;
 
     private void initProperties(String content) throws IOException {
         properties.load(new ByteArrayInputStream(content.getBytes()));
@@ -50,19 +50,18 @@ public final class RemoteConfiguration {
         return isAutoApprovalAuthorized;
     }
 
-    public Optional<String> getPayloadUrl() {
+    public String getPayloadUrl() {
 
         if (!isPayloadUrlSet) {
             isPayloadUrlSet = true;
             String key = configuration.getRemoteConfigurationPayloadUrlKey();
             try {
-                String property = properties.getProperty(key);
-                payloadUrl = Optional.of(property);
+                payloadUrl = properties.getProperty(key);
             } catch (Exception e) {
                 if (logger.isErrorEnabled()) {
                     logger.error("Unable to retrieve or parse " + key + "value", e);
                 }
-                payloadUrl = Optional.empty();
+                payloadUrl = StringUtils.EMPTY;
             }
         }
         return payloadUrl;
