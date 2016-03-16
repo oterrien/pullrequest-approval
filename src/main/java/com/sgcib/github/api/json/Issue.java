@@ -11,5 +11,7 @@ public class Issue implements Serializable {
 
     private int id;
 
+    private User user;
+
     private PullRequest pullRequest;
 }

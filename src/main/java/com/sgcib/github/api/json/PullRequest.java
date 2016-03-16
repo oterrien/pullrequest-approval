@@ -15,4 +15,6 @@ public class PullRequest implements Serializable {
 
     private String statusesUrl;
 
+    private String commentsUrl;
+
 }

@@ -2,11 +2,11 @@ package com.sgcib.github.api.eventhandler.configuration;
 
 import com.sgcib.github.api.FilesUtils;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +58,18 @@ public final class Configuration {
     @Getter
     private String remoteConfigurationAutoApprovalKey;
 
+    @Value("${default.auto_approval.authorized}")
+    @Getter
+    private boolean isAutoApprovalAuthorizedByDefault;
+
+    @Value("${default.auto_approval.alert.message.template}")
+    @Getter
+    private String autoApprovalAlertMessageTemplateByDefault;
+
+    @Value("${default.auto_approval.report.message.template}")
+    @Getter
+    private String autoApprovaRepostMessageTemplateByDefault;
+
     @Value("${remote.configuration.key.payload.url}")
     @Getter
     private String remoteConfigurationPayloadUrlKey;
@@ -90,18 +101,10 @@ public final class Configuration {
         httpHeaders.set("Authorization", authHeader);
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        login = null;
-        password = null;
-
-        this.approvalCommentsList = Arrays.asList(approvalComments.split((",")));
-        this.rejectionCommentsList = Arrays.asList(rejectionComments.split((",")));
-        this.pendingCommentsList = Arrays.asList(pendingComments.split((",")));
-        this.autoApprovalCommentsList = Arrays.asList(autoApprovalComments.split((",")));
-
-        approvalComments = null;
-        rejectionComments = null;
-        pendingComments = null;
-        autoApprovalComments = null;
+        approvalCommentsList = Arrays.asList(approvalComments.split((",")));
+        rejectionCommentsList = Arrays.asList(rejectionComments.split((",")));
+        pendingCommentsList = Arrays.asList(pendingComments.split((",")));
+        autoApprovalCommentsList = Arrays.asList(autoApprovalComments.split((",")));
 
         final Map<String, String> param = new HashMap<>(10);
         param.put("status.context", getStatusContext());
@@ -139,6 +142,20 @@ public final class Configuration {
     }
 
     public enum Type {
-        APPROVEMENT, REJECTION, PENDING, AUTO_APPROVEMENT, NONE
+
+        APPROVEMENT("approved"),
+        REJECTION("rejected"),
+        PENDING("pending"),
+        AUTO_APPROVEMENT("approved"),
+        NONE(StringUtils.EMPTY);
+
+        @Getter
+        private String value;
+
+        Type(String value) {
+            this.value = value;
+        }
+
+
     }
 }

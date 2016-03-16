@@ -1,5 +1,6 @@
 package com.sgcib.github.api.eventhandler.configuration;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,58 +13,46 @@ public final class RemoteConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoteConfiguration.class);
 
-    private Configuration configuration;
-
-    public RemoteConfiguration(Configuration configuration, String content) throws IOException {
-        this.configuration = configuration;
-        initProperties(content);
-    }
-
-    private Properties properties = new Properties();
-
-    private boolean isAutoApprovalAuthorizedSet;
+    @Getter
     private boolean isAutoApprovalAuthorized;
 
-    private boolean isPayloadUrlSet;
+    @Getter
     private String payloadUrl;
 
-    private void initProperties(String content) throws IOException {
+    public RemoteConfiguration(Configuration configuration, String content) throws IOException {
+
+        Properties properties = new Properties();
         properties.load(new ByteArrayInputStream(content.getBytes()));
+
+        initAutoApprovalAuthorized(configuration, properties);
+        initPayloadUrl(configuration, properties);
     }
 
-    public boolean isAutoApprovalAuthorized() {
+    public void initAutoApprovalAuthorized(Configuration configuration, Properties properties) {
 
-        if (!isAutoApprovalAuthorizedSet) {
-
-            isAutoApprovalAuthorizedSet = true;
-            String key = configuration.getRemoteConfigurationAutoApprovalKey();
-            try {
-                String property = properties.getProperty(key);
-                isAutoApprovalAuthorized = Boolean.parseBoolean(property);
-            } catch (Exception e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error("Unable to retrieve or parse " + key + "value", e);
-                }
-                isAutoApprovalAuthorized = false;
-            }
+        String key = configuration.getRemoteConfigurationAutoApprovalKey();
+        try {
+            isAutoApprovalAuthorized = Boolean.parseBoolean(properties.getProperty(key));
+        } catch (Exception e) {
+            logError(e, key);
+            isAutoApprovalAuthorized = false;
         }
-        return isAutoApprovalAuthorized;
     }
 
-    public String getPayloadUrl() {
+    public void initPayloadUrl(Configuration configuration, Properties properties) {
 
-        if (!isPayloadUrlSet) {
-            isPayloadUrlSet = true;
-            String key = configuration.getRemoteConfigurationPayloadUrlKey();
-            try {
-                payloadUrl = properties.getProperty(key);
-            } catch (Exception e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error("Unable to retrieve or parse " + key + "value", e);
-                }
-                payloadUrl = StringUtils.EMPTY;
-            }
+        String key = configuration.getRemoteConfigurationPayloadUrlKey();
+        try {
+            payloadUrl = properties.getProperty(key);
+        } catch (Exception e) {
+            logError(e, key);
+            payloadUrl = StringUtils.EMPTY;
         }
-        return payloadUrl;
+    }
+
+    private void logError(Exception e, String key) {
+        if (logger.isErrorEnabled()) {
+            logger.error("Unable to retrieve or parse value of : " + key, e);
+        }
     }
 }
