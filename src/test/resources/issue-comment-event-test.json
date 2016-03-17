@@ -10,7 +10,7 @@
   },
   "comment": {
     "user": {
-      "login": "my-owner",
+      "login": "${user}",
       "id": 15003331
     },
     "body": "${issue_comment}"
@@ -19,6 +19,7 @@
     "name": "my-repository",
 	"pulls_url": "https://api.github.com/repos/my-owner/my-repository/pulls{/number}",
     "contents_url": "https://api.github.com/repos/my-owner/my-repository/contents/{+path}",
+    "collaborators_url": "https://api.github.com/repos/my-owner/my-repository/collaborators{/collaborator}",
     "default_branch": "master"
   }
 }

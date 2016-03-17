@@ -40,7 +40,8 @@ public class CommunicationService implements ICommunicationService{
 
             return HttpStatus.OK;
 
-        } catch (IOException  |RestClientException e) {
+        } catch (IOException | RestClientException e) {
+            // TODO change exception to CommunicationException
             throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while posting data to " + url, object.toString());
         }
     }
@@ -55,6 +56,7 @@ public class CommunicationService implements ICommunicationService{
         try {
             return restTemplate.getForObject(url, String.class);
         } catch (RestClientException e) {
+            // TODO change exception to CommunicationException
             throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while retrieving data from " + url);
         }
     }
@@ -66,6 +68,7 @@ public class CommunicationService implements ICommunicationService{
         try {
             return JsonUtils.parse(result, type);
         } catch (IOException e) {
+            // TODO change exception to CommunicationException
             throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while parsing result from " + url, result);
         }
     }

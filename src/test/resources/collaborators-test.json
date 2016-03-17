@@ -1,0 +1,23 @@
+[
+  {
+    "login": "owner1",
+    "id": 1500333,
+    "permissions": {
+      "admin": true
+    }
+  },
+  {
+    "login": "owner2",
+    "id": 15003331,
+    "permissions": {
+      "admin": true
+    }
+  },
+  {
+    "login": "contributor",
+    "id": 15003331,
+    "permissions": {
+      "admin": false
+    }
+  }
+]

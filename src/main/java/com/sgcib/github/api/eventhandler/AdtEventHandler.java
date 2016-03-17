@@ -79,7 +79,7 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
             return statuses.getStatuses().stream().filter(p -> p.getContext().equals(configuration.getStatusContext())).findFirst();
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
-                logger.error("Unable to retrieve remote configuration file", e);
+                logger.error("Unable to retrieve last status", e);
             }
             return Optional.empty();
         }

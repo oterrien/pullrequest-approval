@@ -1,6 +1,7 @@
 package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.ICommunicationService;
+import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,11 +13,14 @@ import java.util.Map;
 @Service
 public class CommunicationServiceMock implements ICommunicationService {
 
-    @Getter @Setter
+    @Setter
     private Map<String, String> parameters;
 
-    @Getter
-    private Status status;
+    @Getter @Setter
+    private Status postedStatus;
+
+    @Getter @Setter
+    private Comment postedComment;
 
     @Override
     public <T> T get(String url, Class<T> type) {
@@ -47,6 +51,10 @@ public class CommunicationServiceMock implements ICommunicationService {
                 return FilesUtils.readFileInClasspath("configuration-test.properties", parameters);
             }
 
+            if (url.contains("https://api.github.com/repos/my-owner/my-repository/collaborators")) {
+                return FilesUtils.readFileInClasspath("collaborators-test.json", parameters);
+            }
+
             return null;
 
         } catch (Exception e) {
@@ -58,9 +66,15 @@ public class CommunicationServiceMock implements ICommunicationService {
     public <T> HttpStatus post(String url, T object) {
 
         if (object instanceof Status) {
-            this.status = (Status) object;
+            this.postedStatus = (Status) object;
             return HttpStatus.OK;
         }
+
+        if (object instanceof Comment) {
+            this.postedComment = (Comment) object;
+            return HttpStatus.OK;
+        }
+
         return HttpStatus.NOT_IMPLEMENTED;
     }
 

@@ -10,4 +10,7 @@ public class User implements Serializable {
     private String login;
 
     private long id;
+
+    private Permissions permissions;
+
 }

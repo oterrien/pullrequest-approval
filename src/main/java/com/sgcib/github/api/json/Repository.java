@@ -13,5 +13,7 @@ public class Repository implements Serializable {
 
     private String contentsUrl;
 
+    private String collaboratorsUrl;
+
     private String defaultBranch;
 }

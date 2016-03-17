@@ -1,6 +1,7 @@
 package com.sgcib.github.api;
 
 import com.sgcib.github.api.eventhandler.IEventHandler;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,16 +42,17 @@ public class EventHandlerDispatcher{
 
         PULL_REQUEST("pull_request"), ISSUE_COMMENT("issue_comment"), NONE("");
 
-        private String event;
+        @Getter
+        private String value;
 
-        Event(String event) {
-            this.event = event;
+        Event(String value) {
+            this.value = value;
         }
 
-        public static Event of(final String event) {
+        public static Event of(final String value) {
 
             return Stream.of(Event.values()).
-                    filter(p -> p.event.equals(event)).
+                    filter(p -> p.value.equals(value)).
                     findFirst().
                     orElse(NONE);
         }

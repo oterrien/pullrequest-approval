@@ -1,9 +1,11 @@
 package com.sgcib.github.api.eventhandler;
 
+import com.sgcib.github.api.FilesUtils;
+import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.*;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,10 +35,10 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             logger.info("Event received");
         }
 
-        String comment = event.getComment().getBody().trim().toLowerCase();
+        String comment = event.getComment().getBody().trim();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Issue comment is '" + comment + "'");
+            logger.debug("Issue commentis '" + comment + "'");
         }
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
@@ -57,7 +60,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                                     if (logger.isWarnEnabled()) {
                                         logger.warn("Same user cannot approve pull request");
                                     }
-                                    postAutoApprovalAlertMessage(pullRequest, event.getIssue().getUser());
+                                    postAutoApprovalAlertMessage(pullRequest, user);
                                     return HttpStatus.UNAUTHORIZED;
                                 } else {
                                     if (logger.isInfoEnabled()) {
@@ -74,6 +77,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                             targetState(Status.State.SUCCESS).
                             user(event.getComment().getUser()).
                             pullRequest(pullRequest).
+                            comment(comment).
                             process();
                 } else {
                     logNoChange(type);
@@ -87,6 +91,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                             targetState(Status.State.ERROR).
                             user(event.getComment().getUser()).
                             pullRequest(pullRequest).
+                            comment(comment).
                             process();
                 } else {
                     logNoChange(type);
@@ -100,6 +105,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                             targetState(Status.State.PENDING).
                             user(event.getComment().getUser()).
                             pullRequest(pullRequest).
+                            comment(comment).
                             process();
                 } else {
                     logNoChange(type);
@@ -113,9 +119,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                         @Override
                         public HttpStatus process() throws EventHandlerException {
 
-                            // TODO Find owner list of repository
-                            // TODO Post a message with @${owner} to alert ${user} has approved its own pull request for the given reason
-                            // `${reason}`
+                            postAutoApprovalReportMessage(repository, pullRequest, user, comment);
                             return super.process();
                         }
                     };
@@ -125,6 +129,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                             targetState(Status.State.SUCCESS).
                             user(event.getComment().getUser()).
                             pullRequest(pullRequest).
+                            comment(comment).
                             process();
                 } else {
                     logNoChange(type);
@@ -157,6 +162,8 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
         protected User user;
 
+        protected String comment;
+
         protected Optional<RemoteConfiguration> remoteConfiguration;
 
         public PostStatusProcessor repository(Repository repository) {
@@ -180,6 +187,11 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             return this;
         }
 
+        public PostStatusProcessor comment(String comment) {
+            this.comment = comment;
+            return this;
+        }
+
         public HttpStatus process() throws EventHandlerException {
             String statusesUrl = pullRequest.getStatusesUrl();
             Status targetStatus = new Status(targetState, user.getLogin(), configuration, remoteConfiguration);
@@ -187,52 +199,71 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
         }
     }
 
-    private HttpStatus tryPostStatus(IssueCommentPayload event, Status.State state) throws EventHandlerException {
-
-        if (logger.isDebugEnabled())
-            logger.debug("Setting pull request state to '" + state.getValue() + "'");
-
-        String pullUrl = event.getIssue().getPullRequest().getUrl();
-        PullRequest pullRequest = getPullRequest(pullUrl); // already executed --> find a threadsafe way to reuse the previous call
-        Optional<RemoteConfiguration> remoteConfiguration = getRemoteConfiguration(event.getRepository());
-
-        if (state == Status.State.SUCCESS && configuration.isRemoteConfigurationChecked() &&
-                event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
-
-            if (!isAutoApprovementAuthorized(remoteConfiguration)) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn("Same user cannot approve pull request");
-                }
-
-                postAutoApprovalAlertMessage(pullRequest, event.getIssue().getUser());
-
-                return HttpStatus.UNAUTHORIZED;
-            }
-
-            if (logger.isInfoEnabled()) {
-                logger.info("OK, same user is able to approve his own pull request");
-            }
-        }
-
-        String statusesUrl = pullRequest.getStatusesUrl();
-        Status status = new Status(state, event.getComment().getUser().getLogin(), configuration, remoteConfiguration);
-
-        return communicationService.post(statusesUrl, status);
-    }
-
     private void postAutoApprovalAlertMessage(PullRequest pullRequest, User user) throws EventHandlerException {
 
         String commentsUrl = pullRequest.getCommentsUrl();
 
-        Map<String, String> param = new HashMap<>(10);
-        param.put("user", "@" + user.getLogin());
-        param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.list.auto_approval.one", configuration.getAutoApprovalCommentsList().get(0));
+        try {
+            Map<String, String> param = new HashMap<>(10);
+            param.put("user", "@" + user.getLogin());
+            param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
 
-        Comment comment = new Comment();
-        comment.setBody(StrSubstitutor.replace(configuration.getAutoApprovalAlertMessageTemplateByDefault(), param));
+            Comment comment = new Comment();
+            comment.setBody(FilesUtils.readFileInClasspath(configuration.getAutoApprovalAlertMessageTemplateFileName(), param));
+            communicationService.post(commentsUrl, comment);
+        } catch (Exception e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("Unable to read template : " + configuration.getAutoApprovalAlertMessageTemplateFileName(), e);
+            }
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + configuration.getAutoApprovalAlertMessageTemplateFileName());
+        }
+    }
 
-        communicationService.post(commentsUrl, comment);
+    private void postAutoApprovalReportMessage(Repository repository, PullRequest pullRequest, User user, String reason) throws EventHandlerException {
+
+        // TODO move pullRequest interaction to a PullRequestService
+
+        String commentsUrl = pullRequest.getCommentsUrl();
+
+        try {
+            List<User> administrators = getAdministrators(repository);
+
+            Map<String, String> param = new HashMap<>(10);
+            param.put("user", user.getLogin());
+            param.put("owners", administrators.stream().map(u -> "@" + u.getLogin()).collect(Collectors.joining(", ")));
+            param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
+            param.put("reason", reason);
+
+
+            Comment comment = new Comment();
+            comment.setBody(FilesUtils.readFileInClasspath(configuration.getAutoApprovaReportMessageTemplateFileName(), param));
+            communicationService.post(commentsUrl, comment);
+        } catch (Exception e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("Unable to read template : " + configuration.getAutoApprovalAlertMessageTemplateFileName(), e);
+            }
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + configuration.getAutoApprovalAlertMessageTemplateFileName());
+        }
+    }
+
+    private List<User> getAdministrators(Repository repository) throws EventHandlerException {
+
+        // TODO move pullRequest interaction to a PullRequestService
+
+        try {
+            String collaboratorsUrl = repository.getCollaboratorsUrl().replace("{/collaborator}", StringUtils.EMPTY);
+
+            String str = communicationService.get(collaboratorsUrl);
+            str = "{\"users\":" + str + "}";
+
+            Users users = JsonUtils.parse(str, Users.class);
+            return users.getUsers().stream().filter(user -> user.getPermissions().isAdmin()).collect(Collectors.toList());
+        } catch (Exception e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("Unable to retrieve administrators of repository", e);
+            }
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Unable to retrieve administrators of repository");
+        }
     }
 
     private boolean isAutoApprovementAuthorized(Optional<RemoteConfiguration> remoteConfiguration) throws EventHandlerException {

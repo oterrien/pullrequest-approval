@@ -1,5 +1,8 @@
 package com.sgcib.github.api;
 
+import com.sgcib.github.api.eventhandler.PullRequestEventHandler;
+import com.sgcib.github.api.eventhandler.configuration.Configuration;
+import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +37,9 @@ public class PullRequestApprovalControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @Autowired
+    private Configuration configuration;
+
+    @Autowired
     private CommunicationServiceMock communicationServiceMock;
 
     private MockMvc mockMvc;
@@ -43,6 +49,8 @@ public class PullRequestApprovalControllerTest {
     @Before
     public void setup() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        communicationServiceMock.setPostedStatus(null);
+        communicationServiceMock.setPostedComment(null);
     }
 
     @After
@@ -51,16 +59,17 @@ public class PullRequestApprovalControllerTest {
     }
 
     @Test
-    public void issueEventComment_approved_should_send_success() throws Exception {
+    public void issueEventComment_approved_should_send_success_when_auto_approval_is_authorized() throws Exception {
 
         parameter.put("auto_approval.authorized", "true");
-        parameter.put("issue_comment", "approved");
-        parameter.put("last_state", "pending");
+        parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
+        parameter.put("last_state", Status.State.PENDING.getValue());
+        parameter.put("user", "my_owner");
 
         communicationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
-        String eventType = "issue_comment";
+        String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
@@ -68,22 +77,23 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = communicationServiceMock.getStatus();
+        Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
     }
 
     @Test
-    public void issueEventComment_auto_approved_should_do_nothing_if_auto_approvement_is_forbidden() throws Exception {
+    public void issueEventComment_approved_should_send_error_and_post_comment_when_auto_approval_is_forbidden() throws Exception {
 
         parameter.put("auto_approval.authorized", "false");
-        parameter.put("issue_comment", "approved");
-        parameter.put("last_state", "pending");
+        parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
+        parameter.put("last_state", Status.State.PENDING.getValue());
+        parameter.put("user", "my_owner");
 
         communicationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
-        String eventType = "issue_comment";
+        String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
@@ -91,23 +101,55 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = communicationServiceMock.getStatus();
+        Status status = communicationServiceMock.getPostedStatus();
+        assertThat(status).isNull();
+
+        Comment comment = communicationServiceMock.getPostedComment();
+        assertThat(comment).isNotNull();
+        assertThat(comment.getBody()).isNotEmpty();
+    }
+
+    @Test
+    public void issueEventComment_auto_approved_should_send_success_and_post_comment_when_auto_approval_is_enabled() throws Exception {
+
+        parameter.put("auto_approval.authorized", "true");
+        parameter.put("issue_comment", configuration.getAutoApprovalCommentsList().get(0) + " because I was alone");
+        parameter.put("last_state", Status.State.PENDING.getValue());
+        parameter.put("user", "my_owner");
+
+        communicationServiceMock.setParameters(parameter);
+
+        String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
+        String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
+
+        // Simulate a calling of webservice
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+                content(content).
+                header("x-github-event", eventType));
+
+        // Assertions
+        Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.UNAUTHORIZED.toString())));
+        assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
+
+        Comment comment = communicationServiceMock.getPostedComment();
+        assertThat(comment).isNotNull();
+        assertThat(comment.getBody()).isNotEmpty();
+        assertThat(comment.getBody()).contains("because I was alone");
     }
 
     @Test
     public void issueEventComment_rejected_should_send_error() throws Exception {
 
         parameter.put("auto_approval.authorized", "true");
-        parameter.put("issue_comment", "rejected");
-        parameter.put("last_state", "success");
+        parameter.put("issue_comment", configuration.getRejectionCommentsList().get(0));
+        parameter.put("last_state", Status.State.SUCCESS.getValue());
+        parameter.put("user", "my_owner");
 
         communicationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
-        String eventType = "issue_comment";
+        String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
@@ -115,7 +157,7 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = communicationServiceMock.getStatus();
+        Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
@@ -125,13 +167,14 @@ public class PullRequestApprovalControllerTest {
     public void issueEventComment_tobereviewed_should_send_pending() throws Exception {
 
         parameter.put("auto_approval.authorized", "true");
-        parameter.put("issue_comment", "to be reviewed");
-        parameter.put("last_state", "success");
+        parameter.put("issue_comment", configuration.getPendingCommentsList().get(0));
+        parameter.put("last_state", Status.State.SUCCESS.getValue());
+        parameter.put("user", "my_owner");
 
         communicationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
-        String eventType = "issue_comment";
+        String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
@@ -139,7 +182,7 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = communicationServiceMock.getStatus();
+        Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
@@ -148,12 +191,12 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void pullRequestEvent_created_should_send_pending() throws Exception {
 
-        parameter.put("action", "opened");
+        parameter.put("action", PullRequestEventHandler.Action.OPENED.getValue());
 
         communicationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
-        String eventType = "pull_request";
+        String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
 
         // Simulate a calling of webservice
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
@@ -161,7 +204,7 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = communicationServiceMock.getStatus();
+        Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
@@ -170,13 +213,13 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void pullRequestEvent_synchronized_should_send_pending() throws Exception {
 
-        parameter.put("action", "synchronize");
-        parameter.put("last_state", "success");
+        parameter.put("action", PullRequestEventHandler.Action.SYNCHRONIZED.getValue());
+        parameter.put("last_state", Status.State.SUCCESS.getValue());
 
         communicationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
-        String eventType = "pull_request";
+        String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
 
         // Simulate a calling of webservice
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
@@ -184,9 +227,10 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType));
 
         // Assertions
-        Status status = communicationServiceMock.getStatus();
+        Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
         assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
     }
+
 }

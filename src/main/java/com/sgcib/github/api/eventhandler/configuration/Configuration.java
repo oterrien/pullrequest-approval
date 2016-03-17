@@ -62,13 +62,13 @@ public final class Configuration {
     @Getter
     private boolean isAutoApprovalAuthorizedByDefault;
 
-    @Value("${default.auto_approval.alert.message.template}")
+    @Value("${file.auto_approval.alert.message.template}")
     @Getter
-    private String autoApprovalAlertMessageTemplateByDefault;
+    private String autoApprovalAlertMessageTemplateFileName;
 
-    @Value("${default.auto_approval.report.message.template}")
+    @Value("${file.auto_approval.report.message.template}")
     @Getter
-    private String autoApprovaRepostMessageTemplateByDefault;
+    private String autoApprovaReportMessageTemplateFileName;
 
     @Value("${remote.configuration.key.payload.url}")
     @Getter
@@ -101,10 +101,10 @@ public final class Configuration {
         httpHeaders.set("Authorization", authHeader);
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        approvalCommentsList = Arrays.asList(approvalComments.split((",")));
-        rejectionCommentsList = Arrays.asList(rejectionComments.split((",")));
-        pendingCommentsList = Arrays.asList(pendingComments.split((",")));
-        autoApprovalCommentsList = Arrays.asList(autoApprovalComments.split((",")));
+        approvalCommentsList = Arrays.asList(approvalComments.toLowerCase().split((",")));
+        rejectionCommentsList = Arrays.asList(rejectionComments.toLowerCase().split((",")));
+        pendingCommentsList = Arrays.asList(pendingComments.toLowerCase().split((",")));
+        autoApprovalCommentsList = Arrays.asList(autoApprovalComments.toLowerCase().split((",")));
 
         final Map<String, String> param = new HashMap<>(10);
         param.put("status.context", getStatusContext());
@@ -124,17 +124,21 @@ public final class Configuration {
 
     public Type getType(String comment) {
 
-        if (pendingCommentsList.contains(comment))
+       String commentLowerCase = comment.toLowerCase();
+
+        if (pendingCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
             return Type.PENDING;
+        }
 
-        if (rejectionCommentsList.contains(comment))
+        if (rejectionCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
             return Type.REJECTION;
+        }
 
-        if (autoApprovalCommentsList.contains(comment)) {
+        if (autoApprovalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
             return Type.AUTO_APPROVEMENT;
         }
 
-        if (approvalCommentsList.contains(comment)) {
+        if (approvalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
             return Type.APPROVEMENT;
         }
 

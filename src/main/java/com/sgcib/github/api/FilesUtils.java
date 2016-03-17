@@ -3,6 +3,8 @@ package com.sgcib.github.api;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -15,11 +17,11 @@ public final class FilesUtils {
     private FilesUtils() {
     }
 
-    public static String readFileInClasspath(@NotNull String fileName) throws Exception {
+    public static String readFileInClasspath(@NotNull String fileName) throws URISyntaxException, IOException {
         return new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(fileName).toURI())));
     }
 
-    public static String readFileInClasspath(@NotNull String fileName, @NotNull Map<String, String> parameters) throws Exception {
+    public static String readFileInClasspath(@NotNull String fileName, @NotNull Map<String, String> parameters) throws URISyntaxException, IOException {
         return StrSubstitutor.replace(readFileInClasspath(fileName), parameters);
     }
 }
