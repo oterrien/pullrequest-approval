@@ -67,4 +67,4 @@ This current webservice has to be used as webhooks.
 
 Let's have a look to the following scheme. The current webservice is the box which is the most down.
 
-![Principle](https://github.com/oterrien/pullrequest-approval/blob/master/Github_SG_PR_Status.png)
+<img align="center" src="Github_SG_PR_Status.png">
