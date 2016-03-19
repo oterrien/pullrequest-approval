@@ -1,7 +1,8 @@
-package com.sgcib.github.api.eventhandler;
+package com.sgcib.github.api.service;
 
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.eventhandler.configuration.Configuration;
+import com.sgcib.github.api.eventhandler.EventHandlerException;
+import com.sgcib.github.api.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 
 @Service
-public class CommunicationService implements ICommunicationService{
+public class CommunicationService implements ICommunicationService {
 
     private static final Logger logger = LoggerFactory.getLogger(CommunicationService.class);
 

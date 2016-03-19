@@ -1,10 +1,11 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.eventhandler.configuration.Configuration;
-import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
+import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.PullRequest;
-import com.sgcib.github.api.json.PullRequestPayload;
+import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Status;
+import com.sgcib.github.api.service.ICommunicationService;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,21 +17,17 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload> implements IEventHandler {
+public class PullRequestEventHandler extends AdtEventHandler<PullRequestEvent> implements IEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(PullRequestEventHandler.class);
 
     @Autowired
     public PullRequestEventHandler(Configuration configuration, ICommunicationService communicationService) {
-        super(PullRequestPayload.class, configuration, communicationService);
+        super(PullRequestEvent.class, configuration, communicationService);
     }
 
     @Override
-    public HttpStatus handle(PullRequestPayload event) throws EventHandlerException {
-
-        if (logger.isInfoEnabled()) {
-            logger.info("Event received");
-        }
+    public HttpStatus handle(PullRequestEvent event) throws EventHandlerException {
 
         String action = event.getAction();
 
@@ -47,24 +44,14 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
             case SYNCHRONIZED:
 
                 String statusesUrl = event.getPullRequest().getStatusesUrl();
+                Status.State currentState = getCurrentState(statusesUrl);
 
-                switch (getCurrentState(statusesUrl)) {
-                    case ERROR:
-                    case FAILURE:
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Pull request is currently rejected -> no change");
-                        }
-                        break;
-                    case PENDING:
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Pull request is currently pending -> no change");
-                        }
-                        break;
-                    case SUCCESS:
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Pull request is currently approved -> reset status to pending");
-                        }
-                        return this.tryPostStatus(event, Status.State.PENDING);
+                if (logger.isDebugEnabled() && currentState != Status.State.NONE) {
+                    logger.debug("Pull request is currently " + currentState.getDescription() + " -> reset status to pending");
+                }
+
+                if (currentState == Status.State.SUCCESS) {
+                    return this.tryPostStatus(event, Status.State.PENDING);
                 }
                 break;
         }
@@ -72,19 +59,19 @@ public class PullRequestEventHandler extends AdtEventHandler<PullRequestPayload>
         return HttpStatus.OK;
     }
 
-    private HttpStatus tryPostStatus(PullRequestPayload event, Status.State state) throws EventHandlerException {
+    private HttpStatus tryPostStatus(PullRequestEvent event, Status.State targetState) throws EventHandlerException {
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Setting pull request state to '" + state.getValue() + "'");
+            logger.debug("Setting pull request state to '" + targetState.getValue() + "'");
         }
 
-        PullRequest pullRequest = event.getPullRequest();
-        String statusesUrl = pullRequest.getStatusesUrl();
         Optional<RemoteConfiguration> remoteConfiguration = getRemoteConfiguration(event.getRepository());
+        PullRequest pullRequest = event.getPullRequest();
 
-        Status status = new Status(state, pullRequest.getUser().getLogin(), configuration, remoteConfiguration);
-
-        return communicationService.post(statusesUrl, status);
+        // TODO duplication with PostStatusProcessor.process()
+        String statusesUrl = pullRequest.getStatusesUrl();
+        Status targetStatus = new Status(targetState, pullRequest.getUser().getLogin(), configuration, remoteConfiguration);
+        return communicationService.post(statusesUrl, targetStatus);
     }
 
     public enum Action {

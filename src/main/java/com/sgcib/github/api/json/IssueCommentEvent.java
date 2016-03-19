@@ -5,13 +5,13 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class PullRequestPayload implements Serializable {
+public class IssueCommentEvent implements Serializable {
 
     private String action;
 
-    private int number;
+    private Issue issue;
 
-    private PullRequest pullRequest;
+    private Comment comment;
 
     private Repository repository;
 }

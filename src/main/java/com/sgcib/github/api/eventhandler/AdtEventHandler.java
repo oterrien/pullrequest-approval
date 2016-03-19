@@ -1,12 +1,13 @@
 package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.eventhandler.configuration.Configuration;
-import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
+import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.File;
 import com.sgcib.github.api.json.Repository;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.json.Statuses;
+import com.sgcib.github.api.service.ICommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,8 @@ public abstract class AdtEventHandler<T> implements IEventHandler {
             return processError(new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Unable to parse the event", event));
         } catch (EventHandlerException e) {
             return processError(e);
+        } finally {
+            logger.info("finished");
         }
     }
 

@@ -1,4 +1,4 @@
-package com.sgcib.github.api.eventhandler.configuration;
+package com.sgcib.github.api.configuration;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

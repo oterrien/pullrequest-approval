@@ -2,8 +2,8 @@ package com.sgcib.github.api.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sgcib.github.api.eventhandler.IssueCommentEventHandler;
-import com.sgcib.github.api.eventhandler.configuration.Configuration;
-import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
+import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.configuration.RemoteConfiguration;
 import lombok.Data;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,7 @@ public class Status implements Serializable {
 
     private String context;
 
-    public Status(){
+    public Status() {
 
     }
 
@@ -40,7 +40,7 @@ public class Status implements Serializable {
         this.description = computeDescription(state, user);
     }
 
-    private static String computeTargetUrl(Optional<RemoteConfiguration>  remoteConfiguration) {
+    private static String computeTargetUrl(Optional<RemoteConfiguration> remoteConfiguration) {
         return remoteConfiguration.
                 map(conf -> conf.getPayloadUrl()).
                 orElse(StringUtils.EMPTY);
@@ -62,13 +62,17 @@ public class Status implements Serializable {
     }
 
     public enum State {
-        SUCCESS("success"), ERROR("error"), PENDING("pending"), FAILURE("failure"), NONE(StringUtils.EMPTY);
+        SUCCESS("success", "approved"), ERROR("error", "rejected"), PENDING("pending", "pending"), FAILURE("failure", "rejected"), NONE(StringUtils.EMPTY, StringUtils.EMPTY);
 
         @Getter
         private String value;
 
-        State(String value) {
+        @Getter
+        private String description;
+
+        State(String value, String description) {
             this.value = value;
+            this.description = description;
         }
 
         public static State of(final String state) {

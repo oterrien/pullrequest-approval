@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 public class TemplateTest {
 
     @Test
-    public void alert_message_should_be_fulfilled() throws Exception {
+    public void advice_message_should_be_fulfilled() throws Exception {
 
-        String expected = FilesUtils.readFileInClasspath("message-alert-result-test.md");
+        String expected = FilesUtils.readFileInClasspath("message-advice-result-test.md");
 
         String user = "userTest";
         List<String> autoApprovedList = Stream.of("auto-approved", "auto-validated").collect(Collectors.toList());
@@ -24,15 +24,15 @@ public class TemplateTest {
         Map<String, String> param = new HashMap<>(10);
         param.put("user", "@" + user);
         param.put("issue.comments.list.auto_approval", autoApprovedList.stream().collect(Collectors.joining(" or ")));
-        String actual =  FilesUtils.readFileInClasspath("message-alert.md", param);
+        String actual =  FilesUtils.readFileInClasspath("message-advice.md", param);
 
         Assertions.assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    public void repot_message_should_be_fulfilled() throws Exception {
+    public void alert_message_should_be_fulfilled() throws Exception {
 
-        String expected = FilesUtils.readFileInClasspath("message-report-result-test.md");
+        String expected = FilesUtils.readFileInClasspath("message-alert-result-test.md");
 
         Stream.Builder<User> builder = Stream.builder();
         builder.add(createUser("owner1", true));
@@ -49,7 +49,7 @@ public class TemplateTest {
         param.put("owners", administrators.stream().map(u -> "@" + u.getLogin()).collect(Collectors.joining(", ")));
         param.put("issue.comments.list.auto_approval", autoApprovedList.stream().collect(Collectors.joining(" or ")));
         param.put("reason", reason);
-        String actual =  FilesUtils.readFileInClasspath("message-report.md", param);
+        String actual =  FilesUtils.readFileInClasspath("message-alert.md", param);
 
         Assertions.assertThat(actual).isEqualTo(expected);
     }

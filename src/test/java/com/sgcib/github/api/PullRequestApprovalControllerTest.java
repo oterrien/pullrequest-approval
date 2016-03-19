@@ -1,7 +1,7 @@
 package com.sgcib.github.api;
 
+import com.sgcib.github.api.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.PullRequestEventHandler;
-import com.sgcib.github.api.eventhandler.configuration.Configuration;
 import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
 import org.junit.After;
@@ -10,22 +10,26 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+import static org.assertj.core.api.Assertions.fail;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -72,14 +76,16 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
@@ -96,9 +102,9 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
@@ -107,6 +113,8 @@ public class PullRequestApprovalControllerTest {
         Comment comment = communicationServiceMock.getPostedComment();
         assertThat(comment).isNotNull();
         assertThat(comment.getBody()).isNotEmpty();
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.PRECONDITION_REQUIRED.value());
     }
 
     @Test
@@ -123,9 +131,9 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
@@ -136,6 +144,8 @@ public class PullRequestApprovalControllerTest {
         assertThat(comment).isNotNull();
         assertThat(comment.getBody()).isNotEmpty();
         assertThat(comment.getBody()).contains("because I was alone");
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
@@ -152,15 +162,16 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
-        assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
@@ -177,19 +188,20 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    public void pullRequestEvent_created_should_send_pending() throws Exception {
+    public void pullRequestEvent_opened_should_send_pending() throws Exception {
 
         parameter.put("action", PullRequestEventHandler.Action.OPENED.getValue());
 
@@ -199,15 +211,16 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
@@ -222,15 +235,89 @@ public class PullRequestApprovalControllerTest {
         String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
 
         // Simulate a calling of webservice
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/webhook").
+        MvcResult result = mockMvc.perform(post("/webhook").
                 content(content).
-                header("x-github-event", eventType));
+                header("x-github-event", eventType)).andReturn();
 
         // Assertions
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(result.andExpect(mvcResult -> Objects.equals(mvcResult.getResponse().getContentAsString(), HttpStatus.OK.toString())));
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
+    @Test
+    public void asynchronous_request_should_be_processed_with_succes() throws Exception {
+
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+
+        Stream.of(
+                getPullRequestTask(PullRequestEventHandler.Action.OPENED, Status.State.ERROR, HttpStatus.OK),
+                getIssueCommentTask("approved", Status.State.PENDING, HttpStatus.PRECONDITION_REQUIRED),
+                getPullRequestTask(PullRequestEventHandler.Action.OPENED, Status.State.SUCCESS, HttpStatus.OK),
+                getPullRequestTask(PullRequestEventHandler.Action.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK),
+                getIssueCommentTask("rejected", Status.State.ERROR, HttpStatus.OK),
+                getPullRequestTask(PullRequestEventHandler.Action.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK)
+        ).forEach(task -> executor.submit(task));
+
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.MINUTES);
+    }
+
+    private Runnable getPullRequestTask(PullRequestEventHandler.Action action,
+                                        Status.State latestState,
+                                        HttpStatus expectedStatus) {
+
+        Map<String, String> parameter = new HashMap<>(10);
+        parameter.put("action", action.getValue());
+        parameter.put("last_state", latestState.getValue());
+
+        return () -> {
+            try {
+                String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
+                String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("x-github-event", eventType);
+
+                MvcResult result = mockMvc.perform(post("/webhook").
+                        content(content).
+                        header("x-github-event", eventType)).andReturn();
+
+                assertThat(result.getResponse().getStatus()).isEqualTo(expectedStatus.value());
+            } catch (Exception e) {
+                fail("Exception has occured", e);
+            }
+        };
+    }
+
+    private Runnable getIssueCommentTask(String comment,
+                                         Status.State latestState,
+                                         HttpStatus expectedStatus) {
+
+        Map<String, String> parameter = new HashMap<>(10);
+        parameter.put("auto_approval.authorized", "true");
+        parameter.put("issue_comment", comment);
+        parameter.put("last_state", latestState.getValue());
+        parameter.put("user", "my_owner");
+
+        return () -> {
+            try {
+                String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
+                String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("x-github-event", eventType);
+
+                MvcResult result = mockMvc.perform(post("/webhook").
+                        content(content).
+                        header("x-github-event", eventType)).andReturn();
+
+                assertThat(result.getResponse().getStatus()).isEqualTo(expectedStatus.value());
+            } catch (Exception e) {
+                fail("Exception has occured", e);
+            }
+        };
+    }
 }

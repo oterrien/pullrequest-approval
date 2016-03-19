@@ -1,8 +1,8 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.ICommunicationService;
 import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
+import com.sgcib.github.api.service.ICommunicationService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;

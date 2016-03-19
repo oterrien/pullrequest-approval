@@ -1,16 +1,11 @@
-package com.sgcib.github.api.eventhandler.configuration;
+package com.sgcib.github.api.configuration;
 
-import com.sgcib.github.api.FilesUtils;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -20,9 +15,6 @@ import java.util.stream.Collectors;
 
 @Component
 public final class Configuration {
-
-    @Autowired
-    private ApplicationContext servletContext;
 
     @Value("${handler.authorization.login}")
     private String login;
@@ -62,13 +54,13 @@ public final class Configuration {
     @Getter
     private boolean isAutoApprovalAuthorizedByDefault;
 
+    @Value("${file.auto_approval.advice.message.template}")
+    @Getter
+    private String autoApprovalAdviceMessageTemplateFileName;
+
     @Value("${file.auto_approval.alert.message.template}")
     @Getter
     private String autoApprovalAlertMessageTemplateFileName;
-
-    @Value("${file.auto_approval.report.message.template}")
-    @Getter
-    private String autoApprovaReportMessageTemplateFileName;
 
     @Value("${remote.configuration.key.payload.url}")
     @Getter
@@ -88,9 +80,6 @@ public final class Configuration {
 
     @Getter
     private List<String> autoApprovalCommentsList = new ArrayList<>(10);
-
-    @Getter
-    private ResponseEntity<String> indexPage;
 
     @PostConstruct
     private void setUp() {
@@ -114,31 +103,25 @@ public final class Configuration {
         param.put("issue.comments.list.auto_approval", getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
         param.put("remote.configuration.auto_approval.authorized.key", getRemoteConfigurationAutoApprovalKey());
         param.put("remote.configuration.path", getRemoteConfigurationPath());
-
-        try {
-            indexPage = new ResponseEntity<>(FilesUtils.readFileInClasspath("index.html", param), HttpStatus.OK);
-        } catch (Exception e) {
-            indexPage = new ResponseEntity<>("An error occured while providing information", HttpStatus.NOT_ACCEPTABLE);
-        }
     }
 
     public Type getType(String comment) {
 
-       String commentLowerCase = comment.toLowerCase();
+        String commentLowerCase = comment.toLowerCase();
 
-        if (pendingCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
+        if (pendingCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
             return Type.PENDING;
         }
 
-        if (rejectionCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
+        if (rejectionCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
             return Type.REJECTION;
         }
 
-        if (autoApprovalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
+        if (autoApprovalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
             return Type.AUTO_APPROVEMENT;
         }
 
-        if (approvalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))){
+        if (approvalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
             return Type.APPROVEMENT;
         }
 

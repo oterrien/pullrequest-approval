@@ -2,9 +2,10 @@ package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.FilesUtils;
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.eventhandler.configuration.Configuration;
-import com.sgcib.github.api.eventhandler.configuration.RemoteConfiguration;
+import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.*;
+import com.sgcib.github.api.service.ICommunicationService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,26 +20,22 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayload> implements IEventHandler {
+public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentEvent> implements IEventHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(IssueCommentEventHandler.class);
 
     @Autowired
     public IssueCommentEventHandler(Configuration configuration, ICommunicationService communicationService) {
-        super(IssueCommentPayload.class, configuration, communicationService);
+        super(IssueCommentEvent.class, configuration, communicationService);
     }
 
     @Override
-    public HttpStatus handle(IssueCommentPayload event) throws EventHandlerException {
-
-        if (logger.isInfoEnabled()) {
-            logger.info("Event received");
-        }
+    public HttpStatus handle(IssueCommentEvent event) throws EventHandlerException {
 
         String comment = event.getComment().getBody().trim();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Issue commentis '" + comment + "'");
+            logger.debug("Issue comments '" + comment + "'");
         }
 
         String pullUrl = event.getIssue().getPullRequest().getUrl();
@@ -50,9 +47,12 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             case APPROVEMENT:
                 if (currentState != Status.State.SUCCESS) {
                     logTarget(type, Status.State.SUCCESS);
-                    PostStatusProcessor processor = new PostStatusProcessor() {
+                    PostStatusProcessor processor = new PostStatusProcessor(event.getRepository(), pullRequest, Status.State.SUCCESS, event.getComment().getUser(), comment) {
                         @Override
                         public HttpStatus process() throws EventHandlerException {
+
+                            // TODO : change it. If remote config is not checked, auto-approvement.authorization is determined by default
+                            // TODO : remote isRemoteConfigurationChecked : check by default. If not found, use default value stored in a local configuration.properties
                             if (configuration.isRemoteConfigurationChecked() &&
                                     event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
 
@@ -60,8 +60,8 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                                     if (logger.isWarnEnabled()) {
                                         logger.warn("Same user cannot approve pull request");
                                     }
-                                    postAutoApprovalAlertMessage(pullRequest, user);
-                                    return HttpStatus.UNAUTHORIZED;
+                                    postAutoApprovalAdviceMessage(pullRequest, user);
+                                    return HttpStatus.PRECONDITION_REQUIRED;
                                 } else {
                                     if (logger.isInfoEnabled()) {
                                         logger.info("OK, same user is able to approve his own pull request");
@@ -72,13 +72,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                         }
                     };
 
-                    return processor.
-                            repository(event.getRepository()).
-                            targetState(Status.State.SUCCESS).
-                            user(event.getComment().getUser()).
-                            pullRequest(pullRequest).
-                            comment(comment).
-                            process();
+                    return processor.process();
                 } else {
                     logNoChange(type);
                 }
@@ -86,12 +80,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             case REJECTION:
                 if (currentState != Status.State.ERROR && currentState != Status.State.FAILURE) {
                     logTarget(type, Status.State.ERROR);
-                    return new PostStatusProcessor().
-                            repository(event.getRepository()).
-                            targetState(Status.State.ERROR).
-                            user(event.getComment().getUser()).
-                            pullRequest(pullRequest).
-                            comment(comment).
+                    return new PostStatusProcessor(event.getRepository(), pullRequest, Status.State.ERROR, event.getComment().getUser(), comment).
                             process();
                 } else {
                     logNoChange(type);
@@ -100,12 +89,7 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             case PENDING:
                 if (currentState != Status.State.PENDING) {
                     logTarget(type, Status.State.PENDING);
-                    return new PostStatusProcessor().
-                            repository(event.getRepository()).
-                            targetState(Status.State.PENDING).
-                            user(event.getComment().getUser()).
-                            pullRequest(pullRequest).
-                            comment(comment).
+                    return new PostStatusProcessor(event.getRepository(), pullRequest, Status.State.PENDING, event.getComment().getUser(), comment).
                             process();
                 } else {
                     logNoChange(type);
@@ -115,22 +99,16 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
                 if (currentState != Status.State.SUCCESS) {
                     logTarget(type, Status.State.SUCCESS);
 
-                    PostStatusProcessor processor = new PostStatusProcessor() {
+                    PostStatusProcessor processor = new PostStatusProcessor(event.getRepository(), pullRequest, Status.State.SUCCESS, event.getComment().getUser(), comment) {
                         @Override
                         public HttpStatus process() throws EventHandlerException {
 
-                            postAutoApprovalReportMessage(repository, pullRequest, user, comment);
+                            postAutoApprovalAlertMessage(repository, pullRequest, user, comment);
                             return super.process();
                         }
                     };
 
-                    return processor.
-                            repository(event.getRepository()).
-                            targetState(Status.State.SUCCESS).
-                            user(event.getComment().getUser()).
-                            pullRequest(pullRequest).
-                            comment(comment).
-                            process();
+                    return processor.process();
                 } else {
                     logNoChange(type);
                 }
@@ -166,40 +144,28 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
         protected Optional<RemoteConfiguration> remoteConfiguration;
 
-        public PostStatusProcessor repository(Repository repository) {
+        public PostStatusProcessor(Repository repository, PullRequest pullRequest, Status.State targetState, User user, String comment) {
             this.repository = repository;
-            this.remoteConfiguration = getRemoteConfiguration(repository);
-            return this;
-        }
-
-        public PostStatusProcessor targetState(Status.State targetState) {
-            this.targetState = targetState;
-            return this;
-        }
-
-        public PostStatusProcessor user(User user) {
-            this.user = user;
-            return this;
-        }
-
-        public PostStatusProcessor pullRequest(PullRequest pullRequest) {
             this.pullRequest = pullRequest;
-            return this;
-        }
-
-        public PostStatusProcessor comment(String comment) {
+            this.targetState = targetState;
+            this.user = user;
             this.comment = comment;
-            return this;
+            this.remoteConfiguration = getRemoteConfiguration(repository);
         }
 
         public HttpStatus process() throws EventHandlerException {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Setting pull request state to '" + targetState.getValue() + "'");
+            }
+
             String statusesUrl = pullRequest.getStatusesUrl();
             Status targetStatus = new Status(targetState, user.getLogin(), configuration, remoteConfiguration);
             return communicationService.post(statusesUrl, targetStatus);
         }
     }
 
-    private void postAutoApprovalAlertMessage(PullRequest pullRequest, User user) throws EventHandlerException {
+    private void postAutoApprovalAdviceMessage(PullRequest pullRequest, User user) throws EventHandlerException {
 
         String commentsUrl = pullRequest.getCommentsUrl();
 
@@ -209,17 +175,18 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
             param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
 
             Comment comment = new Comment();
-            comment.setBody(FilesUtils.readFileInClasspath(configuration.getAutoApprovalAlertMessageTemplateFileName(), param));
+            comment.setBody(FilesUtils.readFileInClasspath(configuration.getAutoApprovalAdviceMessageTemplateFileName(), param));
             communicationService.post(commentsUrl, comment);
         } catch (Exception e) {
+            String templateName = configuration.getAutoApprovalAdviceMessageTemplateFileName();
             if (logger.isErrorEnabled()) {
-                logger.error("Unable to read template : " + configuration.getAutoApprovalAlertMessageTemplateFileName(), e);
+                logger.error("Unable to read template : " + templateName, e);
             }
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + configuration.getAutoApprovalAlertMessageTemplateFileName());
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + templateName);
         }
     }
 
-    private void postAutoApprovalReportMessage(Repository repository, PullRequest pullRequest, User user, String reason) throws EventHandlerException {
+    private void postAutoApprovalAlertMessage(Repository repository, PullRequest pullRequest, User user, String reason) throws EventHandlerException {
 
         // TODO move pullRequest interaction to a PullRequestService
 
@@ -236,13 +203,14 @@ public class IssueCommentEventHandler extends AdtEventHandler<IssueCommentPayloa
 
 
             Comment comment = new Comment();
-            comment.setBody(FilesUtils.readFileInClasspath(configuration.getAutoApprovaReportMessageTemplateFileName(), param));
+            comment.setBody(FilesUtils.readFileInClasspath(configuration.getAutoApprovalAlertMessageTemplateFileName(), param));
             communicationService.post(commentsUrl, comment);
         } catch (Exception e) {
+            String templateName = configuration.getAutoApprovalAlertMessageTemplateFileName();
             if (logger.isErrorEnabled()) {
-                logger.error("Unable to read template : " + configuration.getAutoApprovalAlertMessageTemplateFileName(), e);
+                logger.error("Unable to read template : " + templateName, e);
             }
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + configuration.getAutoApprovalAlertMessageTemplateFileName());
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + templateName);
         }
     }
 
