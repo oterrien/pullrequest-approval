@@ -1,6 +1,5 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.eventhandler.IEventHandler;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,28 +13,28 @@ import java.util.stream.Stream;
 public class EventHandlerDispatcher{
 
     @Autowired
-    private IEventHandler issueCommentEventHandler;
+    private IHandler<String, HttpStatus> issueCommentEventHandlerDispatcher;
 
     @Autowired
-    private IEventHandler pullRequestEventHandler;
-
-    private Optional<IEventHandler> getEventHandler(String event) {
-
-        switch (Event.of(event)) {
-            case ISSUE_COMMENT:
-                return Optional.of(issueCommentEventHandler);
-            case PULL_REQUEST:
-                return Optional.of(pullRequestEventHandler);
-            default:
-                return Optional.empty();
-        }
-    }
+    private IHandler<String, HttpStatus> pullRequestEventHandlerDispatcher;
 
     public ResponseEntity handle(String event, String body) {
         return getEventHandler(event)
                 .map(eventHandler -> eventHandler.handle(body))
                 .map(httpStatus -> new ResponseEntity<>(httpStatus.toString(), httpStatus))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED.toString(), HttpStatus.NOT_IMPLEMENTED));
+    }
+
+    private Optional<IHandler<String, HttpStatus>> getEventHandler(String event) {
+
+        switch (Event.of(event)) {
+            case ISSUE_COMMENT:
+                return Optional.of(issueCommentEventHandlerDispatcher);
+            case PULL_REQUEST:
+                return Optional.of(pullRequestEventHandlerDispatcher);
+            default:
+                return Optional.empty();
+        }
     }
 
     public enum Event {

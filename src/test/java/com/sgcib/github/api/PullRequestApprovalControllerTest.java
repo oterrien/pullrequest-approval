@@ -1,7 +1,7 @@
 package com.sgcib.github.api;
 
 import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.eventhandler.PullRequestEventHandler;
+import com.sgcib.github.api.eventhandler.pullrequest.PullRequestEventAction;
 import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
 import org.junit.After;
@@ -64,6 +64,8 @@ public class PullRequestApprovalControllerTest {
 
     @Test
     public void issueEventComment_approved_should_send_success_when_auto_approval_is_authorized() throws Exception {
+
+        System.out.println(System.getProperty("spring.profiles.active"));
 
         parameter.put("auto_approval.authorized", "true");
         parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
@@ -203,7 +205,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void pullRequestEvent_opened_should_send_pending() throws Exception {
 
-        parameter.put("action", PullRequestEventHandler.Action.OPENED.getValue());
+        parameter.put("action", PullRequestEventAction.OPENED.getValue());
 
         communicationServiceMock.setParameters(parameter);
 
@@ -226,7 +228,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void pullRequestEvent_synchronized_should_send_pending() throws Exception {
 
-        parameter.put("action", PullRequestEventHandler.Action.SYNCHRONIZED.getValue());
+        parameter.put("action", PullRequestEventAction.SYNCHRONIZED.getValue());
         parameter.put("last_state", Status.State.SUCCESS.getValue());
 
         communicationServiceMock.setParameters(parameter);
@@ -253,19 +255,19 @@ public class PullRequestApprovalControllerTest {
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
         Stream.of(
-                getPullRequestTask(PullRequestEventHandler.Action.OPENED, Status.State.ERROR, HttpStatus.OK),
+                getPullRequestTask(PullRequestEventAction.OPENED, Status.State.ERROR, HttpStatus.OK),
                 getIssueCommentTask("approved", Status.State.PENDING, HttpStatus.PRECONDITION_REQUIRED),
-                getPullRequestTask(PullRequestEventHandler.Action.OPENED, Status.State.SUCCESS, HttpStatus.OK),
-                getPullRequestTask(PullRequestEventHandler.Action.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK),
+                getPullRequestTask(PullRequestEventAction.OPENED, Status.State.SUCCESS, HttpStatus.OK),
+                getPullRequestTask(PullRequestEventAction.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK),
                 getIssueCommentTask("rejected", Status.State.ERROR, HttpStatus.OK),
-                getPullRequestTask(PullRequestEventHandler.Action.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK)
+                getPullRequestTask(PullRequestEventAction.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK)
         ).forEach(task -> executor.submit(task));
 
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
     }
 
-    private Runnable getPullRequestTask(PullRequestEventHandler.Action action,
+    private Runnable getPullRequestTask(PullRequestEventAction action,
                                         Status.State latestState,
                                         HttpStatus expectedStatus) {
 

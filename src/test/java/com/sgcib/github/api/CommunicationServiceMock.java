@@ -48,7 +48,7 @@ public class CommunicationServiceMock implements ICommunicationService {
             }
 
             if (url.contains("https://raw.githubusercontent.com/my-owner/my-repository/my-branch")) {
-                return FilesUtils.readFileInClasspath("configuration-test.properties", parameters);
+                return FilesUtils.readFileInClasspath(".pullrequest-approval/configuration.properties", parameters);
             }
 
             if (url.contains("https://api.github.com/repos/my-owner/my-repository/collaborators")) {

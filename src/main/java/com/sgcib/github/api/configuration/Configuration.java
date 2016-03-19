@@ -10,17 +10,12 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public final class Configuration {
-
-    @Value("${handler.authorization.login}")
-    private String login;
-
-    @Value("${handler.authorization.password}")
-    private String password;
 
     @Value("${issue.comments.list.approval}")
     private String approvalComments;
@@ -34,25 +29,19 @@ public final class Configuration {
     @Value("${issue.comments.list.pending}")
     private String pendingComments;
 
-    @Value("${status.context}")
+    @Value("${status.context.pullrequest_approval}")
     @Getter
-    private String statusContext;
+    private String pullRequestApprovalStatusContext;
 
-    @Value("${remote.configuration.checked}")
+    @Value("${status.context.donotmerge_label}")
     @Getter
-    private boolean isRemoteConfigurationChecked;
+    private String doNotMergeLabelStatusContext;
 
-    @Value("${remote.configuration.path}")
-    @Getter
-    private String remoteConfigurationPath;
+    @Value("${handler.authorization.login}")
+    private String login;
 
-    @Value("${remote.configuration.key.auto_approval.authorized}")
-    @Getter
-    private String remoteConfigurationAutoApprovalKey;
-
-    @Value("${default.auto_approval.authorized}")
-    @Getter
-    private boolean isAutoApprovalAuthorizedByDefault;
+    @Value("${handler.authorization.password}")
+    private String password;
 
     @Value("${file.auto_approval.advice.message.template}")
     @Getter
@@ -61,6 +50,14 @@ public final class Configuration {
     @Value("${file.auto_approval.alert.message.template}")
     @Getter
     private String autoApprovalAlertMessageTemplateFileName;
+
+    @Value("${remote.configuration.path}")
+    @Getter
+    private String remoteConfigurationPath;
+
+    @Value("${remote.configuration.key.auto_approval.authorized}")
+    @Getter
+    private String remoteConfigurationAutoApprovalKey;
 
     @Value("${remote.configuration.key.payload.url}")
     @Getter
@@ -87,48 +84,39 @@ public final class Configuration {
         String auth = login + ":" + password;
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
         String authHeader = "Basic " + new String(encodedAuth);
-        httpHeaders.set("Authorization", authHeader);
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        this.httpHeaders.set("Authorization", authHeader);
+        this.httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        approvalCommentsList = Arrays.asList(approvalComments.toLowerCase().split((",")));
-        rejectionCommentsList = Arrays.asList(rejectionComments.toLowerCase().split((",")));
-        pendingCommentsList = Arrays.asList(pendingComments.toLowerCase().split((",")));
-        autoApprovalCommentsList = Arrays.asList(autoApprovalComments.toLowerCase().split((",")));
-
-        final Map<String, String> param = new HashMap<>(10);
-        param.put("status.context", getStatusContext());
-        param.put("issue.comments.list.approval", getApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.list.rejection", getRejectionCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.list.pending", getPendingCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("issue.comments.list.auto_approval", getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
-        param.put("remote.configuration.auto_approval.authorized.key", getRemoteConfigurationAutoApprovalKey());
-        param.put("remote.configuration.path", getRemoteConfigurationPath());
+        this.approvalCommentsList = Arrays.asList(approvalComments.toLowerCase().split((",")));
+        this.rejectionCommentsList = Arrays.asList(rejectionComments.toLowerCase().split((",")));
+        this.pendingCommentsList = Arrays.asList(pendingComments.toLowerCase().split((",")));
+        this.autoApprovalCommentsList = Arrays.asList(autoApprovalComments.toLowerCase().split((",")));
     }
 
-    public Type getType(String comment) {
+    public IssueCommentType getType(String comment) {
 
         String commentLowerCase = comment.toLowerCase();
 
         if (pendingCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
-            return Type.PENDING;
+            return IssueCommentType.PENDING;
         }
 
         if (rejectionCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
-            return Type.REJECTION;
+            return IssueCommentType.REJECTION;
         }
 
         if (autoApprovalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
-            return Type.AUTO_APPROVEMENT;
+            return IssueCommentType.AUTO_APPROVEMENT;
         }
 
         if (approvalCommentsList.stream().anyMatch(word -> commentLowerCase.contains(word))) {
-            return Type.APPROVEMENT;
+            return IssueCommentType.APPROVEMENT;
         }
 
-        return Type.NONE;
+        return IssueCommentType.NONE;
     }
 
-    public enum Type {
+    public enum IssueCommentType {
 
         APPROVEMENT("approved"),
         REJECTION("rejected"),
@@ -139,10 +127,8 @@ public final class Configuration {
         @Getter
         private String value;
 
-        Type(String value) {
+        IssueCommentType(String value) {
             this.value = value;
         }
-
-
     }
 }
