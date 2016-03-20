@@ -1,4 +1,4 @@
-package com.sgcib.github.api.service;
+package com.sgcib.github.api.component;
 
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import org.springframework.http.HttpStatus;

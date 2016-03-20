@@ -1,10 +1,9 @@
-package com.sgcib.github.api.service;
+package com.sgcib.github.api.component;
 
 import com.sgcib.github.api.FilesUtils;
 import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
-import com.sgcib.github.api.service.ICommunicationService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;

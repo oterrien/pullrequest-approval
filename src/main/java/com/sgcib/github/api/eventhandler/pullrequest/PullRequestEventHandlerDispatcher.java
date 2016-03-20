@@ -1,7 +1,6 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
-import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.service.Configuration;
+import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.eventhandler.AdtEventHandlerDispatcher;
 import com.sgcib.github.api.json.PullRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +19,8 @@ public class PullRequestEventHandlerDispatcher extends AdtEventHandlerDispatcher
     @Autowired
     private IHandler<PullRequestEvent, HttpStatus> pullRequestLabeledHandler;
 
-    @Autowired
-    public PullRequestEventHandlerDispatcher(Configuration configuration) {
-        super(PullRequestEvent.class, configuration);
+    public PullRequestEventHandlerDispatcher() {
+        super(PullRequestEvent.class);
     }
 
     @Override

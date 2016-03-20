@@ -1,11 +1,11 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
-import com.sgcib.github.api.IHandler;
+import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.Issue;
 import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Status;
-import com.sgcib.github.api.service.*;
+import com.sgcib.github.api.component.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -14,14 +14,14 @@ import org.springframework.stereotype.Component;
 public class PullRequestLabeledHandler extends AdtPullRequestEventHandler implements IHandler<PullRequestEvent, HttpStatus> {
 
     @Autowired
-    public PullRequestLabeledHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
-        super(configuration, remoteConfigurationService, communicationService, statusService);
+    public PullRequestLabeledHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
+        super(remoteConfigurationService, communicationService);
     }
 
     @Override
     public HttpStatus handle(PullRequestEvent event) {
 
-        String targetStatusContext = configuration.getDoNotMergeLabelStatusContext();
+        String targetStatusContext = statusConfiguration.getContextDoNotMergeLabelStatus();
 
         String doNotMergeLabelName = getDoNotMergeLabelName(event);
         Issue issue = communicationService.get(event.getPullRequest().getIssueUrl(), Issue.class);
@@ -50,7 +50,7 @@ public class PullRequestLabeledHandler extends AdtPullRequestEventHandler implem
     private String getDoNotMergeLabelName(PullRequestEvent event) {
         try {
             return remoteConfigurationService.createRemoteConfiguration(event.getRepository()).getDoNotMergeLabelName();
-        } catch (RemoteConfigurationException e) {
+        } catch (RepositoryConfigurationException e) {
             throw new EventHandlerException(e, HttpStatus.PRECONDITION_FAILED, e.getMessage());
         }
     }

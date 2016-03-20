@@ -1,9 +1,9 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.service.CommunicationServiceMock;
-import com.sgcib.github.api.service.ICommunicationService;
-import com.sgcib.github.api.service.IRemoteConfigurationService;
-import com.sgcib.github.api.service.RemoteConfigurationServiceMock;
+import com.sgcib.github.api.component.CommunicationServiceMock;
+import com.sgcib.github.api.component.ICommunicationService;
+import com.sgcib.github.api.component.IRepositoryConfigurationService;
+import com.sgcib.github.api.component.RemoteConfigurationServiceMock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,7 +21,7 @@ public class ServiceTestConfiguration {
 
     @Bean
     @Primary
-    public IRemoteConfigurationService remoteConfigurationService() {
+    public IRepositoryConfigurationService remoteConfigurationService() {
         return new RemoteConfigurationServiceMock();
     }
 }

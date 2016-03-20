@@ -1,7 +1,7 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
-import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.service.*;
+import com.sgcib.github.api.eventhandler.IHandler;
+import com.sgcib.github.api.component.*;
 import com.sgcib.github.api.json.IssueCommentEvent;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.json.User;
@@ -19,8 +19,8 @@ import java.util.stream.Stream;
 public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHandler implements IHandler<IssueCommentEvent, HttpStatus> {
 
     @Autowired
-    public IssueCommentAutoApprovementHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
-        super(configuration, remoteConfigurationService, communicationService, statusService);
+    public IssueCommentAutoApprovementHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
+        super(remoteConfigurationService, communicationService);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
 
         enrich(event);
 
-        String targetStatusContext = configuration.getPullRequestApprovalStatusContext();
+        String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.SUCCESS;
 
         if (isStateAlreadySet(event, targetState, targetStatusContext)) {
@@ -53,7 +53,7 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
         // TODO : to be fixed. Must be granted
         //List<User> administrators = getAdministrators(event.getRepository());
 
-        List<User> administrators = Stream.of(configuration.getTechnicalUserLogin(), user.getLogin()).
+        List<User> administrators = Stream.of(authorizationConfiguration.getTechnicalUserLogin(), user.getLogin()).
                 map(s -> {
                     User admin = new User();
                     admin.setLogin(s);

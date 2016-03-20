@@ -1,9 +1,10 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
-import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.service.*;
+import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Status;
+import com.sgcib.github.api.component.ICommunicationService;
+import com.sgcib.github.api.component.IRepositoryConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -12,14 +13,14 @@ import org.springframework.stereotype.Component;
 public class PullRequestSynchronizedHandler extends AdtPullRequestEventHandler implements IHandler<PullRequestEvent, HttpStatus> {
 
     @Autowired
-    public PullRequestSynchronizedHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
-        super(configuration, remoteConfigurationService, communicationService, statusService);
+    public PullRequestSynchronizedHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
+        super(remoteConfigurationService, communicationService);
     }
 
     @Override
     public HttpStatus handle(PullRequestEvent event) {
 
-        String targetStatusContext = configuration.getPullRequestApprovalStatusContext();
+        String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.PENDING;
 
         if (isStateAlreadySet(event, targetState, targetStatusContext)) {

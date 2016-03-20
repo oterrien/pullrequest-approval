@@ -1,4 +1,4 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,8 @@ public class EventHandlerDispatcher{
     @Autowired
     private IHandler<String, HttpStatus> pullRequestEventHandlerDispatcher;
 
-    public ResponseEntity handle(String event, String body) {
+    public ResponseEntity<String> handle(String event, String body) {
+
         return getEventHandler(event)
                 .map(eventHandler -> eventHandler.handle(body))
                 .map(httpStatus -> new ResponseEntity<>(httpStatus.toString(), httpStatus))

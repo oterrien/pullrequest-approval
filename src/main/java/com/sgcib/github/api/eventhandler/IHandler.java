@@ -1,4 +1,4 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
 public interface IHandler<TI, TO> {
 

@@ -1,7 +1,7 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
-import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.service.*;
+import com.sgcib.github.api.eventhandler.IHandler;
+import com.sgcib.github.api.component.*;
 import com.sgcib.github.api.json.IssueCommentEvent;
 import com.sgcib.github.api.json.Status;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class IssueCommentPendingHandler extends AdtIssueCommentEventHandler implements IHandler<IssueCommentEvent, HttpStatus> {
 
     @Autowired
-    public IssueCommentPendingHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
-        super(configuration, remoteConfigurationService, communicationService, statusService);
+    public IssueCommentPendingHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
+        super(remoteConfigurationService, communicationService);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class IssueCommentPendingHandler extends AdtIssueCommentEventHandler impl
 
         enrich(event);
 
-        String targetStatusContext = configuration.getPullRequestApprovalStatusContext();
+        String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.PENDING;
 
         if (isStateAlreadySet(event, targetState, targetStatusContext)) {

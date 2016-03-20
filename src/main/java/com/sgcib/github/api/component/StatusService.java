@@ -1,4 +1,4 @@
-package com.sgcib.github.api.service;
+package com.sgcib.github.api.component;
 
 import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.json.Status;
@@ -19,13 +19,13 @@ public final class StatusService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusService.class);
 
-    private Configuration configuration;
+    @Autowired
+    private StatusConfiguration statusConfiguration;
 
     private ICommunicationService communicationService;
 
     @Autowired
-    public StatusService(Configuration configuration, ICommunicationService communicationService) {
-        this.configuration = configuration;
+    public StatusService(ICommunicationService communicationService) {
         this.communicationService = communicationService;
     }
 
@@ -57,7 +57,7 @@ public final class StatusService {
         }
     }
 
-    public Status createStatus(Status.State state, String user, String context, RemoteConfiguration remoteConfiguration) {
+    public Status createStatus(Status.State state, String user, String context, RepositoryConfiguration remoteConfiguration) {
 
         Status status = new Status();
         status.setContext(context);
@@ -68,7 +68,7 @@ public final class StatusService {
         return status;
     }
 
-    private String computeDescription(Status.State state, String user, String context, RemoteConfiguration remoteConfiguration) {
+    private String computeDescription(Status.State state, String user, String context, RepositoryConfiguration remoteConfiguration) {
 
         switch (getContext(context)) {
             case PULL_REQUEST_APPROVAL: {
@@ -76,12 +76,12 @@ public final class StatusService {
                 map.put("user", user);
                 switch (state) {
                     case SUCCESS:
-                        return StrSubstitutor.replace(configuration.getMessageStatusPullRequestApprovalSuccess(), map);
+                        return StrSubstitutor.replace(statusConfiguration.getMessagePullRequestApprovalSuccess(), map);
                     case PENDING:
-                        return configuration.getMessageStatusPullRequestApprovalPending();
+                        return statusConfiguration.getMessagePullRequestApprovalPending();
                     case ERROR:
                     case FAILURE:
-                        return StrSubstitutor.replace(configuration.getMessageStatusPullRequestApprovalError(), map);
+                        return StrSubstitutor.replace(statusConfiguration.getMessagePullRequestApprovalError(), map);
                 }
                 break;
             }
@@ -90,11 +90,11 @@ public final class StatusService {
                 map.put("label", remoteConfiguration.getDoNotMergeLabelName());
                 switch (state) {
                     case SUCCESS:
-                        return StrSubstitutor.replace(configuration.getMessageStatusDoNotMergeSuccess(), map);
+                        return StrSubstitutor.replace(statusConfiguration.getMessageDoNotMergeSuccess(), map);
                     case PENDING:
                     case ERROR:
                     case FAILURE:
-                        return StrSubstitutor.replace(configuration.getMessageStatusPullRequestApprovalError(), map);
+                        return StrSubstitutor.replace(statusConfiguration.getMessagePullRequestApprovalError(), map);
                 }
                 break;
             }
@@ -104,11 +104,11 @@ public final class StatusService {
 
     public Context getContext(String value) {
 
-        if (Objects.equals(value, configuration.getPullRequestApprovalStatusContext())) {
+        if (Objects.equals(value, statusConfiguration.getContextPullRequestApprovalStatus())) {
             return Context.PULL_REQUEST_APPROVAL;
         }
 
-        if (Objects.equals(value, configuration.getDoNotMergeLabelStatusContext())) {
+        if (Objects.equals(value, statusConfiguration.getContextDoNotMergeLabelStatus())) {
             return Context.DO_NOT_MERGE;
         }
 

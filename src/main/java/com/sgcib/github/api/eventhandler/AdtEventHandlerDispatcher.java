@@ -1,8 +1,6 @@
 package com.sgcib.github.api.eventhandler;
 
-import com.sgcib.github.api.IHandler;
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.service.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,13 +12,10 @@ public abstract class AdtEventHandlerDispatcher<T extends Serializable> implemen
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected final Configuration configuration;
-
     protected Class<T> type;
 
-    protected AdtEventHandlerDispatcher(Class<T> type, Configuration configuration) {
+    protected AdtEventHandlerDispatcher(Class<T> type) {
         this.type = type;
-        this.configuration = configuration;
     }
 
     @Override

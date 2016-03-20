@@ -1,4 +1,4 @@
-package com.sgcib.github.api.service;
+package com.sgcib.github.api.component;
 
 import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
@@ -18,14 +18,10 @@ public class CommunicationService implements ICommunicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommunicationService.class);
 
-    protected Configuration handlerConfiguration;
+    @Autowired
+    protected AuthorizationConfiguration authorizationConfiguration;
 
     protected RestTemplate restTemplate = new RestTemplate();
-
-    @Autowired
-    public CommunicationService(Configuration handlerConfiguration) {
-        this.handlerConfiguration = handlerConfiguration;
-    }
 
     @Override
     public <T> HttpStatus post(String url, T object) {
@@ -35,7 +31,7 @@ public class CommunicationService implements ICommunicationService {
                 LOGGER.info("Posting " + object.toString() + " to " + url);
             }
 
-            HttpEntity<String> entity = new HttpEntity<>(JsonUtils.serialize(object), this.handlerConfiguration.getHttpHeaders());
+            HttpEntity<String> entity = new HttpEntity<>(JsonUtils.serialize(object), authorizationConfiguration.getHttpHeaders());
             restTemplate.postForObject(url, entity, String.class);
 
             return HttpStatus.OK;

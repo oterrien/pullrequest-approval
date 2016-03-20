@@ -1,16 +1,19 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
-import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.service.Configuration;
+import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.eventhandler.AdtEventHandlerDispatcher;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.IssueCommentEvent;
+import com.sgcib.github.api.component.IssueCommentConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
 public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatcher<IssueCommentEvent> implements IHandler<String, HttpStatus> {
+
+    @Autowired
+    protected IssueCommentConfiguration configuration;
 
     @Autowired
     private IHandler<IssueCommentEvent, HttpStatus> issueCommentApprovementHandler;
@@ -24,9 +27,8 @@ public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatche
     @Autowired
     private IHandler<IssueCommentEvent, HttpStatus> issueCommentAutoApprovementHandler;
 
-    @Autowired
-    public IssueCommentEventHandlerDispatcher(Configuration configuration) {
-        super(IssueCommentEvent.class, configuration);
+    public IssueCommentEventHandlerDispatcher() {
+        super(IssueCommentEvent.class);
     }
 
     @Override

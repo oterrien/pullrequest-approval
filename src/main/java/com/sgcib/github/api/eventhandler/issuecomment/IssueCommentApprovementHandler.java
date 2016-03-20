@@ -1,7 +1,7 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
-import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.service.*;
+import com.sgcib.github.api.eventhandler.IHandler;
+import com.sgcib.github.api.component.*;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.IssueCommentEvent;
 import com.sgcib.github.api.json.PullRequest;
@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler implements IHandler<IssueCommentEvent, HttpStatus> {
 
     @Autowired
-    public IssueCommentApprovementHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
-        super(configuration, remoteConfigurationService, communicationService, statusService);
+    public IssueCommentApprovementHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
+        super(remoteConfigurationService, communicationService);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
 
         enrich(event);
 
-        String targetStatusContext = configuration.getPullRequestApprovalStatusContext();
+        String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.SUCCESS;
 
         if (isStateAlreadySet(event, targetState, targetStatusContext)) {
@@ -43,7 +43,7 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
         PullRequest pullRequest = event.getIssue().getPullRequest();
         if (Objects.equals(event.getComment().getUser().getLogin(), pullRequest.getUser().getLogin())) {
             try {
-                RemoteConfiguration remoteConfiguration = remoteConfigurationService.createRemoteConfiguration(event.getRepository());
+                RepositoryConfiguration remoteConfiguration = remoteConfigurationService.createRemoteConfiguration(event.getRepository());
 
                 if (!remoteConfiguration.isAutoApprovalAuthorized()) {
                     if (logger.isWarnEnabled()) {
@@ -56,7 +56,7 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
                 if (logger.isInfoEnabled()) {
                     logger.info("Same user is authorized to approve his own pull request for repository '" + event.getRepository().getName() + "'");
                 }
-            } catch (RemoteConfigurationException e) {
+            } catch (RepositoryConfigurationException e) {
                 throw new EventHandlerException(e, HttpStatus.PRECONDITION_FAILED, e.getMessage());
             }
         }
