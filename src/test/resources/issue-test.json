@@ -1,0 +1,20 @@
+{
+  "url": "https://api.github.com/repos/my-owner/my-repository/issues/0",
+  "id": 139393240,
+  "pull_request": {
+    "url": "https://api.github.com/repos/my-owner/my-repository/pulls/0",
+    "html_url": "https://github.com/my-owner/my-repository/pull/0"
+  },
+  "labels": [
+    {
+      "url": "https://github.com/my-owner/my-repository/labels/${label}",
+      "name": "${label}",
+      "color": "fc2929"
+    },
+    {
+      "url": "https://github.com/my-owner/my-repository/labels/other",
+      "name": "other",
+      "color": "bfe5bf"
+    }
+  ]
+}

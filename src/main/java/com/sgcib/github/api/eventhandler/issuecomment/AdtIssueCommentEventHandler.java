@@ -3,14 +3,9 @@ package com.sgcib.github.api.eventhandler.issuecomment;
 import com.sgcib.github.api.FilesUtils;
 import com.sgcib.github.api.IHandler;
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.configuration.RemoteConfiguration;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.*;
-import com.sgcib.github.api.service.ICommunicationService;
-import com.sgcib.github.api.service.RemoteConfigurationException;
-import com.sgcib.github.api.service.RemoteConfigurationService;
-import com.sgcib.github.api.service.StatusService;
+import com.sgcib.github.api.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +24,11 @@ public abstract class AdtIssueCommentEventHandler implements IHandler<IssueComme
 
     protected final StatusService statusService;
 
-    protected final RemoteConfigurationService remoteConfigurationService;
+    protected final IRemoteConfigurationService remoteConfigurationService;
 
     protected final Configuration configuration;
 
-    protected AdtIssueCommentEventHandler(Configuration configuration, RemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
+    protected AdtIssueCommentEventHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
 
         this.configuration = configuration;
         this.remoteConfigurationService = remoteConfigurationService;

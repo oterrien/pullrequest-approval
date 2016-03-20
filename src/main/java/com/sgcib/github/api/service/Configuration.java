@@ -1,5 +1,6 @@
-package com.sgcib.github.api.configuration;
+package com.sgcib.github.api.service;
 
+import com.sgcib.github.api.FilesUtils;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -9,10 +10,12 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 @Component
 public final class Configuration {
@@ -29,13 +32,46 @@ public final class Configuration {
     @Value("${issue.comments.list.pending}")
     private String pendingComments;
 
-    @Value("${status.context.pullrequest_approval}")
+    @Value("${context.pullrequest_approval.name}")
     @Getter
     private String pullRequestApprovalStatusContext;
 
-    @Value("${status.context.donotmerge_label}")
+    @Value("${context.do_not_merge_label.name}")
     @Getter
     private String doNotMergeLabelStatusContext;
+
+    @Value("${message.status.template.path}")
+    private String messageStatusTemplatePath;
+
+    @Value("${message.status.pullrequest_approval.success.key}")
+    private String messageStatusPullRequestApprovalSuccessKey;
+
+    @Value("${message.status.pullrequest_approval.pending.key}")
+    private String messageStatusPullRequestApprovalPendingKey;
+
+    @Value("$message.status.pullrequest_approval.error.key}")
+    private String messageStatusPullRequestApprovalErrorKey;
+
+    @Value("${message.status.do_not_merge.success.key}")
+    private String messageStatusDoNotMergeSuccessKey;
+
+    @Value("${message.status.do_not_merge.error.key}")
+    private String messageStatusDoNotMergeErrorKey;
+
+    @Getter
+    private String messageStatusPullRequestApprovalSuccess;
+
+    @Getter
+    private String messageStatusPullRequestApprovalPending;
+
+    @Getter
+    private String messageStatusPullRequestApprovalError;
+
+    @Getter
+    private String messageStatusDoNotMergeSuccess;
+
+    @Getter
+    private String messageStatusDoNotMergeError;
 
     @Value("${handler.authorization.login}")
     @Getter
@@ -63,6 +99,10 @@ public final class Configuration {
     @Value("${remote.configuration.key.payload.url}")
     @Getter
     private String remoteConfigurationPayloadUrlKey;
+
+    @Value("${remote.configuration.key.do_not_merge.label}")
+    @Getter
+    private String remoteConfigurationDoNotMergeLabelKey;
 
     @Getter
     private HttpHeaders httpHeaders = new HttpHeaders();
@@ -92,6 +132,18 @@ public final class Configuration {
         this.rejectionCommentsList = Arrays.asList(rejectionComments.toLowerCase().split((",")));
         this.pendingCommentsList = Arrays.asList(pendingComments.toLowerCase().split((",")));
         this.autoApprovalCommentsList = Arrays.asList(autoApprovalComments.toLowerCase().split((",")));
+
+        try {
+            Properties properties = new Properties();
+            properties.load(new ByteArrayInputStream(FilesUtils.readFileInClasspath(this.messageStatusTemplatePath).getBytes()));
+            this.messageStatusPullRequestApprovalSuccess = properties.getProperty(this.messageStatusPullRequestApprovalSuccessKey);
+            this.messageStatusPullRequestApprovalPending = properties.getProperty(this.messageStatusPullRequestApprovalPendingKey);
+            this.messageStatusPullRequestApprovalError = properties.getProperty(this.messageStatusPullRequestApprovalErrorKey);
+            this.messageStatusDoNotMergeSuccess = properties.getProperty(this.messageStatusDoNotMergeSuccessKey);
+            this.messageStatusDoNotMergeError = properties.getProperty(this.messageStatusDoNotMergeErrorKey);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public IssueCommentType getType(String comment) {

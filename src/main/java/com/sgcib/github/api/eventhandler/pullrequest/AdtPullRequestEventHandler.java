@@ -1,16 +1,11 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
 import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.configuration.RemoteConfiguration;
+import com.sgcib.github.api.service.*;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.PullRequest;
 import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Status;
-import com.sgcib.github.api.service.ICommunicationService;
-import com.sgcib.github.api.service.RemoteConfigurationException;
-import com.sgcib.github.api.service.RemoteConfigurationService;
-import com.sgcib.github.api.service.StatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,11 +18,11 @@ public abstract class AdtPullRequestEventHandler implements IHandler<PullRequest
 
     protected final StatusService statusService;
 
-    protected final RemoteConfigurationService remoteConfigurationService;
+    protected final IRemoteConfigurationService remoteConfigurationService;
 
     protected final Configuration configuration;
 
-    protected AdtPullRequestEventHandler(Configuration configuration, RemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
+    protected AdtPullRequestEventHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
 
         this.configuration = configuration;
         this.remoteConfigurationService = remoteConfigurationService;

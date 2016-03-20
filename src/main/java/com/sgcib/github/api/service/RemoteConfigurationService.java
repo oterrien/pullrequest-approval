@@ -2,8 +2,6 @@ package com.sgcib.github.api.service;
 
 import com.sgcib.github.api.FilesUtils;
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.File;
 import com.sgcib.github.api.json.Repository;
 import org.slf4j.Logger;
@@ -12,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public final class RemoteConfigurationService {
+public final class RemoteConfigurationService implements IRemoteConfigurationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteConfigurationService.class);
 

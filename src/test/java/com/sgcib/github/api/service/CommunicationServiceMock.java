@@ -1,5 +1,7 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.service;
 
+import com.sgcib.github.api.FilesUtils;
+import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.service.ICommunicationService;
@@ -53,6 +55,10 @@ public class CommunicationServiceMock implements ICommunicationService {
 
             if (url.contains("https://api.github.com/repos/my-owner/my-repository/collaborators")) {
                 return FilesUtils.readFileInClasspath("collaborators-test.json", parameters);
+            }
+
+            if (url.contains("https://api.github.com/repos/my-owner/my-repository/issues")) {
+                return FilesUtils.readFileInClasspath("issue-test.json", parameters);
             }
 
             return null;

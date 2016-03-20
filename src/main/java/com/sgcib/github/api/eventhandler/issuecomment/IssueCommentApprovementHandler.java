@@ -1,17 +1,12 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
 import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.configuration.RemoteConfiguration;
+import com.sgcib.github.api.service.*;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.IssueCommentEvent;
 import com.sgcib.github.api.json.PullRequest;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.json.User;
-import com.sgcib.github.api.service.ICommunicationService;
-import com.sgcib.github.api.service.RemoteConfigurationException;
-import com.sgcib.github.api.service.RemoteConfigurationService;
-import com.sgcib.github.api.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -25,7 +20,7 @@ import java.util.stream.Collectors;
 public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler implements IHandler<IssueCommentEvent, HttpStatus> {
 
     @Autowired
-    public IssueCommentApprovementHandler(Configuration configuration, RemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
+    public IssueCommentApprovementHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
         super(configuration, remoteConfigurationService, communicationService, statusService);
     }
 

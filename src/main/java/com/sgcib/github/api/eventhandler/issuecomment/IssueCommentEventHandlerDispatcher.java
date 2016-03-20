@@ -1,7 +1,7 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
 import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.service.Configuration;
 import com.sgcib.github.api.eventhandler.AdtEventHandlerDispatcher;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.IssueCommentEvent;

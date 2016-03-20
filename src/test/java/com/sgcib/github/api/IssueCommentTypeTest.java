@@ -1,6 +1,6 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.service.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 

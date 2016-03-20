@@ -2,13 +2,9 @@ package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.IHandler;
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.service.ICommunicationService;
-import com.sgcib.github.api.service.RemoteConfigurationService;
-import com.sgcib.github.api.service.StatusService;
+import com.sgcib.github.api.service.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;

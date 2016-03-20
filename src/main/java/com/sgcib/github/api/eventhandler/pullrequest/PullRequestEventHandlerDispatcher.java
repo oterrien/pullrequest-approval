@@ -1,7 +1,7 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
 import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.service.Configuration;
 import com.sgcib.github.api.eventhandler.AdtEventHandlerDispatcher;
 import com.sgcib.github.api.json.PullRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;

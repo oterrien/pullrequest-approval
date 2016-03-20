@@ -1,12 +1,9 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
 import com.sgcib.github.api.IHandler;
-import com.sgcib.github.api.configuration.Configuration;
+import com.sgcib.github.api.service.*;
 import com.sgcib.github.api.json.IssueCommentEvent;
 import com.sgcib.github.api.json.Status;
-import com.sgcib.github.api.service.ICommunicationService;
-import com.sgcib.github.api.service.RemoteConfigurationService;
-import com.sgcib.github.api.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -15,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class IssueCommentPendingHandler extends AdtIssueCommentEventHandler implements IHandler<IssueCommentEvent, HttpStatus> {
 
     @Autowired
-    public IssueCommentPendingHandler(Configuration configuration, RemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
+    public IssueCommentPendingHandler(Configuration configuration, IRemoteConfigurationService remoteConfigurationService, ICommunicationService communicationService, StatusService statusService) {
         super(configuration, remoteConfigurationService, communicationService, statusService);
     }
 

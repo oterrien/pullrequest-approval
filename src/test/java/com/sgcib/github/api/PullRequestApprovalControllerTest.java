@@ -1,9 +1,11 @@
 package com.sgcib.github.api;
 
-import com.sgcib.github.api.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.pullrequest.PullRequestEventAction;
 import com.sgcib.github.api.json.Comment;
 import com.sgcib.github.api.json.Status;
+import com.sgcib.github.api.service.CommunicationServiceMock;
+import com.sgcib.github.api.service.Configuration;
+import com.sgcib.github.api.service.RemoteConfigurationServiceMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +41,9 @@ public class PullRequestApprovalControllerTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+
+    @Autowired
+    private RemoteConfigurationServiceMock remoteConfigurationServiceMock;
 
     @Autowired
     private Configuration configuration;
@@ -86,6 +91,7 @@ public class PullRequestApprovalControllerTest {
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
+        assertThat(status.getContext()).isEqualTo(configuration.getPullRequestApprovalStatusContext());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -96,7 +102,7 @@ public class PullRequestApprovalControllerTest {
         parameter.put("auto_approval.authorized", "false");
         parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
         parameter.put("last_state", Status.State.PENDING.getValue());
-        parameter.put("user", "my_owner");
+        parameter.put("user", "my-owner");
 
         communicationServiceMock.setParameters(parameter);
 
@@ -146,6 +152,7 @@ public class PullRequestApprovalControllerTest {
         assertThat(comment).isNotNull();
         assertThat(comment.getBody()).isNotEmpty();
         assertThat(comment.getBody()).contains("because I was alone");
+        assertThat(status.getContext()).isEqualTo(configuration.getPullRequestApprovalStatusContext());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -172,6 +179,7 @@ public class PullRequestApprovalControllerTest {
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
+        assertThat(status.getContext()).isEqualTo(configuration.getPullRequestApprovalStatusContext());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -198,6 +206,7 @@ public class PullRequestApprovalControllerTest {
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
+        assertThat(status.getContext()).isEqualTo(configuration.getPullRequestApprovalStatusContext());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -221,6 +230,7 @@ public class PullRequestApprovalControllerTest {
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
+        assertThat(status.getContext()).isEqualTo(configuration.getPullRequestApprovalStatusContext());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -245,6 +255,34 @@ public class PullRequestApprovalControllerTest {
         Status status = communicationServiceMock.getPostedStatus();
         assertThat(status).isNotNull();
         assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
+        assertThat(status.getContext()).isEqualTo(configuration.getPullRequestApprovalStatusContext());
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    public void pullRequestEvent_labeled_with_donotmerge_should_send_error() throws Exception {
+
+        parameter.put("action", PullRequestEventAction.LABELED.getValue());
+        parameter.put("last_state", Status.State.ERROR.getValue());
+        parameter.put("label", "do not merge");
+
+        communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
+
+        String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
+        String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
+
+        // Simulate a calling of webservice
+        MvcResult result = mockMvc.perform(post("/webhook").
+                content(content).
+                header("x-github-event", eventType)).andReturn();
+
+        // Assertions
+        Status status = communicationServiceMock.getPostedStatus();
+        assertThat(status).isNotNull();
+        assertThat(status.getContext()).isEqualTo(configuration.getDoNotMergeLabelStatusContext());
+        assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }

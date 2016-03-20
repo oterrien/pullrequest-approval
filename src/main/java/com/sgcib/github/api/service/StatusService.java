@@ -1,8 +1,6 @@
 package com.sgcib.github.api.service;
 
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.configuration.Configuration;
-import com.sgcib.github.api.configuration.RemoteConfiguration;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.json.Statuses;
 import org.apache.commons.lang3.text.StrSubstitutor;
@@ -13,15 +11,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public final class StatusService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusService.class);
-    private final static String SUCCESS_MESSAGE = "${user} has approved pull request";
-    private final static String PENDING_MESSAGE = "pull request is waiting for being reviewed";
-    private final static String ERROR_MESSAGE = "${user} has rejected pull request. Please fix it";
 
     private Configuration configuration;
 
@@ -67,30 +63,59 @@ public final class StatusService {
         status.setContext(context);
         status.setTargetUrl(remoteConfiguration.getPayloadUrl());
         status.setState(state.getValue());
-        status.setDescription(computeDescription(state, user));
+        status.setDescription(computeDescription(state, user, context, remoteConfiguration));
 
         return status;
     }
 
-    private String computeDescription(Status.State state, String user) {
+    private String computeDescription(Status.State state, String user, String context, RemoteConfiguration remoteConfiguration) {
 
-        switch (state) {
-            case SUCCESS: {
+        switch (getContext(context)) {
+            case PULL_REQUEST_APPROVAL: {
                 Map<String, String> map = new HashMap<>(1);
                 map.put("user", user);
-                return StrSubstitutor.replace(SUCCESS_MESSAGE, map);
+                switch (state) {
+                    case SUCCESS:
+                        return StrSubstitutor.replace(configuration.getMessageStatusPullRequestApprovalSuccess(), map);
+                    case PENDING:
+                        return configuration.getMessageStatusPullRequestApprovalPending();
+                    case ERROR:
+                    case FAILURE:
+                        return StrSubstitutor.replace(configuration.getMessageStatusPullRequestApprovalError(), map);
+                }
+                break;
             }
-            case PENDING:
-                return PENDING_MESSAGE;
-            case ERROR:
-            case FAILURE: {
+            case DO_NOT_MERGE: {
                 Map<String, String> map = new HashMap<>(1);
-                map.put("user", user);
-                StrSubstitutor.replace(ERROR_MESSAGE, map);
+                map.put("label", remoteConfiguration.getDoNotMergeLabelName());
+                switch (state) {
+                    case SUCCESS:
+                        return StrSubstitutor.replace(configuration.getMessageStatusDoNotMergeSuccess(), map);
+                    case PENDING:
+                    case ERROR:
+                    case FAILURE:
+                        return StrSubstitutor.replace(configuration.getMessageStatusPullRequestApprovalError(), map);
+                }
+                break;
             }
-            default:
-                return state.getValue();
         }
+        return state.getValue();
     }
 
+    public Context getContext(String value) {
+
+        if (Objects.equals(value, configuration.getPullRequestApprovalStatusContext())) {
+            return Context.PULL_REQUEST_APPROVAL;
+        }
+
+        if (Objects.equals(value, configuration.getDoNotMergeLabelStatusContext())) {
+            return Context.DO_NOT_MERGE;
+        }
+
+        return Context.NONE;
+    }
+
+    enum Context {
+        PULL_REQUEST_APPROVAL, DO_NOT_MERGE, NONE;
+    }
 }

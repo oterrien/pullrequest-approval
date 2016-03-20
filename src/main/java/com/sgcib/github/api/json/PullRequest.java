@@ -13,6 +13,8 @@ public class PullRequest implements Serializable {
 
     private User user;
 
+    private String issueUrl;
+
     private String statusesUrl;
 
     private String commentsUrl;

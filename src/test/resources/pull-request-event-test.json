@@ -2,8 +2,9 @@
   "action": "${action}",
   "number": 1,
   "pull_request": {
-    "url": "https://api.github.com/repos/my-owner/my-repository/pulls/0",
+    "url": "https://api.github.com/repos/my-owner/my-repository/pulls/1",
     "id": 62136249,
+    "issue_url": "https://api.github.com/repos/my-owner/my-repository/issues/1",
     "user": {
       "login": "my-owner",
       "id": 15003331

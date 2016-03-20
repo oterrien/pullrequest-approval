@@ -1,7 +1,6 @@
 package com.sgcib.github.api.service;
 
 import com.sgcib.github.api.JsonUtils;
-import com.sgcib.github.api.configuration.Configuration;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
