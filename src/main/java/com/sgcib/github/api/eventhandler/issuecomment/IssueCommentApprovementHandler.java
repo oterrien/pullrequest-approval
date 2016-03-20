@@ -66,7 +66,6 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
 
     private void postAutoApprovalAdviceMessage(IssueCommentEvent event) {
 
-        PullRequest pullRequest = event.getIssue().getPullRequest();
         User user = event.getComment().getUser();
         String templateName = configuration.getAutoApprovalAdviceMessageTemplateFileName();
 
@@ -74,6 +73,6 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
         param.put("user", "@" + user.getLogin());
         param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
 
-        postComment(templateName, param, pullRequest.getCommentsUrl());
+        postComment(templateName, param, event);
     }
 }

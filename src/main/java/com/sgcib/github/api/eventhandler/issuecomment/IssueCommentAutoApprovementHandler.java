@@ -45,11 +45,9 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
 
     private void postAutoApprovalAlertMessage(IssueCommentEvent event) {
 
-        Repository repository = event.getRepository();
-        PullRequest pullRequest = event.getIssue().getPullRequest();
         User user = event.getComment().getUser();
         String templateName = configuration.getAutoApprovalAlertMessageTemplateFileName();
-        List<User> administrators = getAdministrators(repository);
+        List<User> administrators = getAdministrators(event.getRepository());
 
         Map<String, String> param = new HashMap<>(10);
         param.put("user", user.getLogin());
@@ -57,6 +55,6 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
         param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
         param.put("reason", event.getComment().getBody().trim());
 
-        postComment(templateName, param, pullRequest.getCommentsUrl());
+        postComment(templateName, param, event);
     }
 }

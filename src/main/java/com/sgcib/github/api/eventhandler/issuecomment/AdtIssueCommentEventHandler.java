@@ -94,16 +94,14 @@ public abstract class AdtIssueCommentEventHandler implements IHandler<IssueComme
         }
     }
 
-    protected void postComment(String templateName, Map<String, String> param, String commentUrl){
+    protected void postComment(String templateName, Map<String, String> param, IssueCommentEvent event) {
         try {
+            String comment = FilesUtils.readFileInClasspath(templateName, param);
             Comment alertMessage = new Comment();
-            alertMessage.setBody(FilesUtils.readFileInClasspath(templateName, param));
-            communicationService.post(commentUrl, alertMessage);
+            alertMessage.setBody(comment);
+            communicationService.post(event.getIssue().getPullRequest().getCommentsUrl(), alertMessage);
         } catch (Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Unable to read template : " + templateName, e);
-            }
-            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while reading template from " + templateName);
+            throw new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Error while posting comment for repository '" + event.getRepository().getName() + "'");
         }
     }
 }
