@@ -52,7 +52,8 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
 
         User user = event.getComment().getUser();
         String templateName = configuration.getAutoApprovalAlertMessageTemplateFileName();
-        // TODO
+
+        // TODO : to be fixed. Must be granted
         //List<User> administrators = getAdministrators(event.getRepository());
 
         List<User> administrators = Stream.of(configuration.getTechnicalUserLogin(), user.getLogin()).

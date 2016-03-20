@@ -37,11 +37,11 @@ public final class Configuration {
     @Getter
     private String doNotMergeLabelStatusContext;
 
-    @Value("${handler.authorization.technicalUserLogin}")
+    @Value("${handler.authorization.login}")
     @Getter
     private String technicalUserLogin;
 
-    @Value("${handler.authorization.technicalUserPassword}")
+    @Value("${handler.authorization.password}")
     private String technicalUserPassword;
 
     @Value("${file.auto_approval.advice.message.template}")
