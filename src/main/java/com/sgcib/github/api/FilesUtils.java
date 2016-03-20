@@ -8,9 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
@@ -22,9 +24,10 @@ public final class FilesUtils {
     }
 
     public static String readFileInClasspath(@NotNull String fileName) throws URISyntaxException, IOException {
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(fileName)))) {
-            return buffer.lines().collect(Collectors.joining("\n"));
-        }
+
+        return new Scanner(ClassLoader.getSystemResourceAsStream(fileName), StandardCharsets.UTF_8.name()).
+                useDelimiter("\\Z").
+                next();
     }
 
     public static String readFileInClasspath(@NotNull String fileName, @NotNull Map<String, String> parameters) throws URISyntaxException, IOException {

@@ -37,11 +37,12 @@ public final class Configuration {
     @Getter
     private String doNotMergeLabelStatusContext;
 
-    @Value("${handler.authorization.login}")
-    private String login;
+    @Value("${handler.authorization.technicalUserLogin}")
+    @Getter
+    private String technicalUserLogin;
 
-    @Value("${handler.authorization.password}")
-    private String password;
+    @Value("${handler.authorization.technicalUserPassword}")
+    private String technicalUserPassword;
 
     @Value("${file.auto_approval.advice.message.template}")
     @Getter
@@ -81,7 +82,7 @@ public final class Configuration {
     @PostConstruct
     private void setUp() {
 
-        String auth = login + ":" + password;
+        String auth = technicalUserLogin + ":" + technicalUserPassword;
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
         String authHeader = "Basic " + new String(encodedAuth);
         this.httpHeaders.set("Authorization", authHeader);

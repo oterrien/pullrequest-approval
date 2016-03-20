@@ -22,6 +22,10 @@ public class IssueCommentPendingHandler extends AdtIssueCommentEventHandler impl
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
+        if (isTechnicalUserAction(event)){
+            return HttpStatus.OK;
+        }
+
         enrich(event);
 
         String targetStatusContext = configuration.getPullRequestApprovalStatusContext();

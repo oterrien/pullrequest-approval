@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class AdtIssueCommentEventHandler implements IHandler<IssueCommentEvent, HttpStatus> {
@@ -45,6 +46,18 @@ public abstract class AdtIssueCommentEventHandler implements IHandler<IssueComme
         String pullUrl = event.getIssue().getPullRequest().getUrl();
         PullRequest pullRequest = communicationService.get(pullUrl, PullRequest.class);
         event.getIssue().setPullRequest(pullRequest);
+    }
+
+    protected boolean isTechnicalUserAction(IssueCommentEvent event) {
+
+        String technicalUser = configuration.getTechnicalUserLogin();
+        if (Objects.equals(event.getComment().getUser().getLogin(), technicalUser)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Event received from a technical comment for repository '" + event.getRepository().getName() + "' -> no change");
+            }
+            return true;
+        }
+        return false;
     }
 
     protected boolean isStateAlreadySet(IssueCommentEvent event, Status.State targetState, String targetStatusContext) {

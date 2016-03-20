@@ -22,6 +22,10 @@ public class IssueCommentRejectionHandler extends AdtIssueCommentEventHandler im
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
+        if (isTechnicalUserAction(event)){
+            return HttpStatus.OK;
+        }
+
         enrich(event);
 
         String targetStatusContext = configuration.getPullRequestApprovalStatusContext();

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,6 +32,10 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
+        if (isTechnicalUserAction(event)){
+            return HttpStatus.OK;
+        }
+
         enrich(event);
 
         String targetStatusContext = configuration.getPullRequestApprovalStatusContext();
@@ -41,7 +46,7 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
         }
 
         PullRequest pullRequest = event.getIssue().getPullRequest();
-        if (event.getComment().getUser().getId() == pullRequest.getUser().getId()) {
+        if (Objects.equals(event.getComment().getUser().getLogin(), pullRequest.getUser().getLogin())) {
             try {
                 RemoteConfiguration remoteConfiguration = remoteConfigurationService.createRemoteConfiguration(event.getRepository());
 
