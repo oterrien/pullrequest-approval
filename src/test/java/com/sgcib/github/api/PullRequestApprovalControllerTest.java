@@ -81,9 +81,10 @@ public class PullRequestApprovalControllerTest {
         parameter.put("auto_approval.authorized", "true");
         parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
         parameter.put("last_state", Status.State.PENDING.getValue());
-        parameter.put("user", "my_owner");
+        parameter.put("user", "my-owner");
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
@@ -113,6 +114,7 @@ public class PullRequestApprovalControllerTest {
         parameter.put("user", "my-owner");
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
@@ -141,9 +143,10 @@ public class PullRequestApprovalControllerTest {
         parameter.put("auto_approval.authorized", "true");
         parameter.put("issue_comment", configuration.getAutoApprovalCommentsList().get(0) + " because I was alone");
         parameter.put("last_state", Status.State.PENDING.getValue());
-        parameter.put("user", "my_owner");
+        parameter.put("user", "my-owner");
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
@@ -175,9 +178,10 @@ public class PullRequestApprovalControllerTest {
         parameter.put("auto_approval.authorized", "true");
         parameter.put("issue_comment", configuration.getRejectionCommentsList().get(0));
         parameter.put("last_state", Status.State.SUCCESS.getValue());
-        parameter.put("user", "my_owner");
+        parameter.put("user", "my-owner");
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
@@ -204,9 +208,10 @@ public class PullRequestApprovalControllerTest {
         parameter.put("auto_approval.authorized", "true");
         parameter.put("issue_comment", configuration.getPendingCommentsList().get(0));
         parameter.put("last_state", Status.State.SUCCESS.getValue());
-        parameter.put("user", "my_owner");
+        parameter.put("user", "my-owner");
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("issue-comment-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.ISSUE_COMMENT.getValue();
@@ -234,6 +239,7 @@ public class PullRequestApprovalControllerTest {
         parameter.put("label", "do not merge");
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();
@@ -261,6 +267,7 @@ public class PullRequestApprovalControllerTest {
         parameter.put("last_state", Status.State.SUCCESS.getValue());
 
         communicationServiceMock.setParameters(parameter);
+        remoteConfigurationServiceMock.setParameters(parameter);
 
         String content = FilesUtils.readFileInClasspath("pull-request-event-test.json", parameter);
         String eventType = EventHandlerDispatcher.Event.PULL_REQUEST.getValue();

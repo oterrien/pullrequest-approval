@@ -11,10 +11,6 @@ public class KeyConfiguration {
     @Getter
     private String repositoryConfigurationAutoApprovalKey;
 
-    @Value("${repository.configuration.key.payload.url}")
-    @Getter
-    private String repositoryConfigurationPayloadUrlKey;
-
     @Value("${repository.configuration.key.do_not_merge.label}")
     @Getter
     private String repositoryConfigurationDoNotMergeLabelKey;

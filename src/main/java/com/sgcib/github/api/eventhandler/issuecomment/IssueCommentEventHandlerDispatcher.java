@@ -36,6 +36,10 @@ public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatche
     @Override
     public HttpStatus handle(IssueCommentEvent event) throws EventHandlerException {
 
+        if (event.getIssue().getPullRequest() == null){
+            return HttpStatus.OK;
+        }
+
         String comment = event.getComment().getBody().trim();
 
         if (logger.isDebugEnabled()) {

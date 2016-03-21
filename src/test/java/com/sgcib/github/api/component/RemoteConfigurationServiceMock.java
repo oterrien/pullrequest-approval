@@ -22,7 +22,7 @@ public final class RemoteConfigurationServiceMock implements IRepositoryConfigur
     private String repositoryConfigurationPath;
 
     @Autowired
-    private IRepositoryConfigurationService.KeyConfiguration keyConfiguration;
+    private KeyConfiguration keyConfiguration;
 
     public RepositoryConfiguration createRemoteConfiguration(Repository repository) throws RepositoryConfigurationException {
 

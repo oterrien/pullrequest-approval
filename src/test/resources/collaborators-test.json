@@ -1,23 +1,14 @@
 [
   {
-    "login": "owner1",
-    "id": 1500333,
-    "permissions": {
-      "admin": true
-    }
+    "login": "${user}",
+    "id": 1500333
   },
   {
-    "login": "owner2",
-    "id": 15003331,
-    "permissions": {
-      "admin": true
-    }
+    "login": "owner",
+    "id": 15003331
   },
   {
     "login": "contributor",
-    "id": 15003331,
-    "permissions": {
-      "admin": false
-    }
+    "id": 15003331
   }
 ]
