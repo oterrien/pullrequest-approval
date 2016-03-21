@@ -30,6 +30,9 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
     public HttpStatus handle(IssueCommentEvent event) {
 
         if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())){
+            if (logger.isDebugEnabled()) {
+                logger.debug("User "+ event.getComment().getUser().getLogin() +" is not authorized to approve pull request for repository '" + event.getRepository().getName() + "'");
+            }
             return HttpStatus.UNAUTHORIZED;
         }
 
