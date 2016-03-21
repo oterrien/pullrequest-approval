@@ -6,12 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Service
 public class CommunicationService implements ICommunicationService {
@@ -50,8 +53,9 @@ public class CommunicationService implements ICommunicationService {
         }
 
         try {
-            return restTemplate.getForObject(url, String.class);
-        } catch (RestClientException e) {
+            HttpEntity<String> entity = new HttpEntity<>(authorizationConfiguration.getHttpHeaders());
+            return restTemplate.exchange(new URI(url), HttpMethod.GET, (HttpEntity<?>) entity, String.class).getBody();
+        } catch (URISyntaxException | RestClientException e) {
             // TODO change exception to CommunicationException
             throw new EventHandlerException(e, HttpStatus.BAD_REQUEST, "Error while retrieving data from " + url);
         }
