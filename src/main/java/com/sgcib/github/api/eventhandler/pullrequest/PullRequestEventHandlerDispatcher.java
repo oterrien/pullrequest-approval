@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 public class PullRequestEventHandlerDispatcher extends AdtEventHandlerDispatcher<PullRequestEvent> implements IHandler<String, HttpStatus> {
 
@@ -38,9 +40,18 @@ public class PullRequestEventHandlerDispatcher extends AdtEventHandlerDispatcher
             case SYNCHRONIZED:
                 return pullRequestSynchronizedHandler.handle(event);
             case LABELED:
+            case UNLABELED:
                 return pullRequestLabeledHandler.handle(event);
         }
 
         return HttpStatus.OK;
     }
+
+    @Override
+    protected boolean isTechnicalUserAction(PullRequestEvent event) {
+
+        String technicalUser = authorizationConfiguration.getTechnicalUserLogin();
+        return (Objects.equals(event.getPullRequest().getUser().getLogin(), technicalUser));
+    }
+
 }

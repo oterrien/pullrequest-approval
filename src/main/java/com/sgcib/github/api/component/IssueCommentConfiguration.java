@@ -48,9 +48,9 @@ public final class IssueCommentConfiguration {
     @PostConstruct
     private void setUp() {
 
-        this.approvalCommentsList = Arrays.asList(approvalComments.toLowerCase().split((",")));
-        this.rejectionCommentsList = Arrays.asList(rejectionComments.toLowerCase().split((",")));
-        this.pendingCommentsList = Arrays.asList(pendingComments.toLowerCase().split((",")));
+        this.approvalCommentsList = Arrays.asList(approvalComments.toLowerCase().split(","));
+        this.rejectionCommentsList = Arrays.asList(rejectionComments.toLowerCase().split(","));
+        this.pendingCommentsList = Arrays.asList(pendingComments.toLowerCase().split(","));
         this.autoApprovalCommentsList = Arrays.asList(autoApprovalComments.toLowerCase().split((",")));
     }
 

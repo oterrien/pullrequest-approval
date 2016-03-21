@@ -19,8 +19,8 @@ public class IssueCommentPendingHandler extends AdtIssueCommentEventHandler impl
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
-        if (isTechnicalUserAction(event)){
-            return HttpStatus.OK;
+        if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())){
+            return HttpStatus.UNAUTHORIZED;
         }
 
         enrich(event);

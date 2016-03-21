@@ -27,7 +27,7 @@ public class PullRequestApprovalController {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("body : " + body);
+            LOGGER.debug("body : " + body.replaceAll("\n", "").replaceAll("\r", "").replaceAll(" ", ""));
         }
 
         return eventHandlerDispatcher.handle(event, body);

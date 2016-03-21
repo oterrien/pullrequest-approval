@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatcher<IssueCommentEvent> implements IHandler<String, HttpStatus> {
 
@@ -53,4 +55,12 @@ public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatche
 
         return HttpStatus.OK;
     }
+
+    @Override
+    protected boolean isTechnicalUserAction(IssueCommentEvent event) {
+
+        String technicalUser = authorizationConfiguration.getTechnicalUserLogin();
+        return (Objects.equals(event.getComment().getUser().getLogin(), technicalUser));
+    }
+
 }

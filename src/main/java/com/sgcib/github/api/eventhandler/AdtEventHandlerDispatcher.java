@@ -1,8 +1,12 @@
 package com.sgcib.github.api.eventhandler;
 
 import com.sgcib.github.api.JsonUtils;
+import com.sgcib.github.api.component.AuthorizationConfiguration;
+import com.sgcib.github.api.component.IssueCommentConfiguration;
+import com.sgcib.github.api.json.IssueCommentEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
@@ -12,6 +16,9 @@ public abstract class AdtEventHandlerDispatcher<T extends Serializable> implemen
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
+    protected AuthorizationConfiguration authorizationConfiguration;
+
     protected Class<T> type;
 
     protected AdtEventHandlerDispatcher(Class<T> type) {
@@ -19,11 +26,16 @@ public abstract class AdtEventHandlerDispatcher<T extends Serializable> implemen
     }
 
     @Override
-    public final HttpStatus handle(String event) {
+    public final HttpStatus handle(String eventString) {
 
         try {
-            T obj = JsonUtils.parse(event, type);
-            return this.handle(obj);
+            T event = JsonUtils.parse(eventString, type);
+
+            if (isTechnicalUserAction(event)){
+                return HttpStatus.OK;
+            }
+
+            return this.handle(event);
         } catch (IOException e) {
             return processError(new EventHandlerException(e, HttpStatus.UNPROCESSABLE_ENTITY, "Unable to parse the event"));
         } catch (EventHandlerException e) {
@@ -31,7 +43,9 @@ public abstract class AdtEventHandlerDispatcher<T extends Serializable> implemen
         }
     }
 
-    protected abstract HttpStatus handle(T obj);
+    protected abstract HttpStatus handle(T event);
+
+    protected abstract boolean isTechnicalUserAction(T event);
 
     private HttpStatus processError(EventHandlerException e) {
 

@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class EventHandlerDispatcher{
+public class EventHandlerDispatcher {
 
     @Autowired
     private IHandler<String, HttpStatus> issueCommentEventHandlerDispatcher;
@@ -26,9 +26,11 @@ public class EventHandlerDispatcher{
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED.toString(), HttpStatus.NOT_IMPLEMENTED));
     }
 
-    private Optional<IHandler<String, HttpStatus>> getEventHandler(String event) {
+    private Optional<IHandler<String, HttpStatus>> getEventHandler(String eventString) {
 
-        switch (Event.of(event)) {
+        Event event = Event.of(eventString);
+
+        switch (event) {
             case ISSUE_COMMENT:
                 return Optional.of(issueCommentEventHandlerDispatcher);
             case PULL_REQUEST:

@@ -49,7 +49,7 @@ public class PullRequestLabeledHandler extends AdtPullRequestEventHandler implem
 
     private String getDoNotMergeLabelName(PullRequestEvent event) {
         try {
-            return remoteConfigurationService.createRemoteConfiguration(event.getRepository()).getDoNotMergeLabelName();
+            return repositoryConfigurationService.createRemoteConfiguration(event.getRepository()).getDoNotMergeLabelName();
         } catch (RepositoryConfigurationException e) {
             throw new EventHandlerException(e, HttpStatus.PRECONDITION_FAILED, e.getMessage());
         }

@@ -9,6 +9,8 @@ public class Repository implements Serializable {
 
     private String name;
 
+    private User owner;
+
     private String pullsUrl;
 
     private String contentsUrl;

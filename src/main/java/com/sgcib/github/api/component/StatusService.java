@@ -3,6 +3,7 @@ package com.sgcib.github.api.component;
 import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.json.Statuses;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +44,8 @@ public final class StatusService {
     }
 
     public Optional<Status> findLastStatus(String statusesUrl, String context) {
-        try {
 
+        try {
             String str = communicationService.get(statusesUrl);
             str = "{\"statuses\":" + str + "}";
             Statuses statuses = JsonUtils.parse(str, Statuses.class);
@@ -61,7 +62,7 @@ public final class StatusService {
 
         Status status = new Status();
         status.setContext(context);
-        status.setTargetUrl(remoteConfiguration.getPayloadUrl());
+        status.setTargetUrl(StringUtils.EMPTY);
         status.setState(state.getValue());
         status.setDescription(computeDescription(state, user, context, remoteConfiguration));
 
@@ -70,7 +71,9 @@ public final class StatusService {
 
     private String computeDescription(Status.State state, String user, String context, RepositoryConfiguration remoteConfiguration) {
 
-        switch (getContext(context)) {
+        ContextType contextType = getContextType(context);
+
+        switch (contextType) {
             case PULL_REQUEST_APPROVAL: {
                 Map<String, String> map = new HashMap<>(1);
                 map.put("user", user);
@@ -94,7 +97,7 @@ public final class StatusService {
                     case PENDING:
                     case ERROR:
                     case FAILURE:
-                        return StrSubstitutor.replace(statusConfiguration.getMessagePullRequestApprovalError(), map);
+                        return StrSubstitutor.replace(statusConfiguration.getMessageDoNotMergeError(), map);
                 }
                 break;
             }
@@ -102,20 +105,20 @@ public final class StatusService {
         return state.getValue();
     }
 
-    public Context getContext(String value) {
+    public ContextType getContextType(String value) {
 
         if (Objects.equals(value, statusConfiguration.getContextPullRequestApprovalStatus())) {
-            return Context.PULL_REQUEST_APPROVAL;
+            return ContextType.PULL_REQUEST_APPROVAL;
         }
 
         if (Objects.equals(value, statusConfiguration.getContextDoNotMergeLabelStatus())) {
-            return Context.DO_NOT_MERGE;
+            return ContextType.DO_NOT_MERGE;
         }
 
-        return Context.NONE;
+        return ContextType.NONE;
     }
 
-    enum Context {
+    public enum ContextType {
         PULL_REQUEST_APPROVAL, DO_NOT_MERGE, NONE;
     }
 }

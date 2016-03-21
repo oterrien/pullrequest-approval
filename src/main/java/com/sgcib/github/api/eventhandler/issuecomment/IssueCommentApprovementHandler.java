@@ -27,8 +27,8 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
-        if (isTechnicalUserAction(event)){
-            return HttpStatus.OK;
+        if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())){
+            return HttpStatus.UNAUTHORIZED;
         }
 
         enrich(event);
@@ -43,7 +43,7 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
         PullRequest pullRequest = event.getIssue().getPullRequest();
         if (Objects.equals(event.getComment().getUser().getLogin(), pullRequest.getUser().getLogin())) {
             try {
-                RepositoryConfiguration remoteConfiguration = remoteConfigurationService.createRemoteConfiguration(event.getRepository());
+                RepositoryConfiguration remoteConfiguration = repositoryConfigurationService.createRemoteConfiguration(event.getRepository());
 
                 if (!remoteConfiguration.isAutoApprovalAuthorized()) {
                     if (logger.isWarnEnabled()) {
@@ -67,11 +67,11 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
     private void postAutoApprovalAdviceMessage(IssueCommentEvent event) {
 
         User user = event.getComment().getUser();
-        String templateName = configuration.getAutoApprovalAdviceMessageTemplateFileName();
+        String templateName = issueCommentConfiguration.getAutoApprovalAdviceMessageTemplateFileName();
 
         Map<String, String> param = new HashMap<>(10);
         param.put("user", "@" + user.getLogin());
-        param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
+        param.put("issue.comments.list.auto_approval", issueCommentConfiguration.getAutoApprovalCommentsList().stream().collect(Collectors.joining(" or ")));
 
         postComment(templateName, param, event);
     }

@@ -4,25 +4,24 @@ import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 public final class RepositoryConfiguration {
 
     @Getter
-    private boolean isAutoApprovalAuthorized;
+    private final boolean isAutoApprovalAuthorized;
 
     @Getter
-    private String payloadUrl;
+    private final String doNotMergeLabelName;
 
     @Getter
-    private String doNotMergeLabelName;
+    private final List<String> adminTeam;
 
     Properties repositoryRemoteProperties = new Properties();
 
     Properties defaultRepositoryProperties = new Properties();
 
-    protected RepositoryConfiguration(IRepositoryConfigurationService.KeyConfiguration keyConfiguration, Optional<String> remoteRepositoryContent, String defaultRepositoryContent) throws IOException {
+    protected RepositoryConfiguration(KeyConfiguration keyConfiguration, Optional<String> remoteRepositoryContent, String defaultRepositoryContent) throws IOException {
 
         if (remoteRepositoryContent.isPresent()) {
             repositoryRemoteProperties.load(new ByteArrayInputStream(remoteRepositoryContent.get().getBytes()));
@@ -31,8 +30,8 @@ public final class RepositoryConfiguration {
         this.defaultRepositoryProperties.load(new ByteArrayInputStream(defaultRepositoryContent.getBytes()));
 
         this.isAutoApprovalAuthorized = Boolean.parseBoolean(get(keyConfiguration.getRepositoryConfigurationAutoApprovalKey()));
-        this.payloadUrl = get(keyConfiguration.getRepositoryConfigurationPayloadUrlKey());
         this.doNotMergeLabelName = get(keyConfiguration.getRepositoryConfigurationDoNotMergeLabelKey());
+        this.adminTeam= Arrays.asList(get(keyConfiguration.getRepositoryConfigurationAdminTeamKey()).split(","));
     }
 
     private String get(String key) {

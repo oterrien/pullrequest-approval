@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 public class PullRequestOpenedHandler extends AdtPullRequestEventHandler implements IHandler<PullRequestEvent, HttpStatus> {
 
     @Autowired
+    private IHandler<PullRequestEvent, HttpStatus> pullRequestLabeledHandler;
+
+
+    @Autowired
     public PullRequestOpenedHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
         super(remoteConfigurationService, communicationService);
     }
@@ -26,6 +30,8 @@ public class PullRequestOpenedHandler extends AdtPullRequestEventHandler impleme
         if (isStateAlreadySet(event, targetState, targetStatusContext)) {
             return HttpStatus.OK;
         }
+
+        pullRequestLabeledHandler.handle(event);
 
         return postStatus(event, targetState, targetStatusContext);
 

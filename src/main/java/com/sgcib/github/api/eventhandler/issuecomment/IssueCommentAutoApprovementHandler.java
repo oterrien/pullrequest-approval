@@ -1,8 +1,11 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
+import com.sgcib.github.api.component.ICommunicationService;
+import com.sgcib.github.api.component.IRepositoryConfigurationService;
+import com.sgcib.github.api.component.RepositoryConfiguration;
 import com.sgcib.github.api.eventhandler.IHandler;
-import com.sgcib.github.api.component.*;
 import com.sgcib.github.api.json.IssueCommentEvent;
+import com.sgcib.github.api.json.Repository;
 import com.sgcib.github.api.json.Status;
 import com.sgcib.github.api.json.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +29,8 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
-        if (isTechnicalUserAction(event)) {
-            return HttpStatus.OK;
+        if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())){
+            return HttpStatus.UNAUTHORIZED;
         }
 
         enrich(event);
@@ -48,25 +51,36 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
     private void postAutoApprovalAlertMessage(IssueCommentEvent event) {
 
         User user = event.getComment().getUser();
-        String templateName = configuration.getAutoApprovalAlertMessageTemplateFileName();
+        String templateName = issueCommentConfiguration.getAutoApprovalAlertMessageTemplateFileName();
 
-        // TODO : to be fixed. Must be granted
-        //List<User> administrators = getAdministrators(event.getRepository());
-
-        List<User> administrators = Stream.of(authorizationConfiguration.getTechnicalUserLogin(), user.getLogin()).
-                map(s -> {
-                    User admin = new User();
-                    admin.setLogin(s);
-                    return admin;
-                }).
-                collect(Collectors.toList());
+        List<String> administrators = getAdministrators(event.getRepository());
 
         Map<String, String> param = new HashMap<>(10);
         param.put("user", user.getLogin());
-        param.put("owners", administrators.stream().map(u -> "@" + u.getLogin()).collect(Collectors.joining(", ")));
-        param.put("issue.comments.list.auto_approval", configuration.getAutoApprovalCommentsList().stream().map(c -> "**" + c + "**").collect(Collectors.joining(" or ")));
+        param.put("owners", administrators.stream().map(admin -> "@" + admin).collect(Collectors.joining(", ")));
+        param.put("issue.comments.list.auto_approval", issueCommentConfiguration.getAutoApprovalCommentsList().stream().map(c -> "**" + c + "**").collect(Collectors.joining(" or ")));
         param.put("reason", event.getComment().getBody().trim());
 
         postComment(templateName, param, event);
+    }
+
+    private List<String> getAdministrators(Repository repository){
+
+        User owner = repository.getOwner();
+        User.Type type = User.Type.of(owner.getType());
+
+        if (type == User.Type.ORGANIZATION){
+            try {
+                RepositoryConfiguration repositoryConfiguration = repositoryConfigurationService.createRemoteConfiguration(repository);
+                return repositoryConfiguration.getAdminTeam();
+            } catch (Exception e){
+                if (logger.isWarnEnabled()) {
+                    logger.warn("unable to retrieve remote configuration for repository '" + repository.getName() +"'", logger.isDebugEnabled() ? e : e.getMessage());
+                }
+            }
+        }
+
+        return Stream.of(owner.getLogin()).collect(Collectors.toList());
+
     }
 }

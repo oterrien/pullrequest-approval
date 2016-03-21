@@ -4,12 +4,10 @@ import com.sgcib.github.api.FilesUtils;
 import com.sgcib.github.api.JsonUtils;
 import com.sgcib.github.api.json.File;
 import com.sgcib.github.api.json.Repository;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -38,18 +36,26 @@ public final class RepositoryConfigurationService implements IRepositoryConfigur
 
         try {
             String defaultRepositoryContent = FilesUtils.readFileInClasspath(repositoryConfigurationPath);
-            String remoteRepositoryContent = getRemoteRepositoryContent(repository);
-            return new RepositoryConfiguration(keyConfiguration, Optional.of(remoteRepositoryContent), defaultRepositoryContent);
+            Optional<String> remoteRepositoryContent = getRemoteRepositoryContent(repository);
+            return new RepositoryConfiguration(keyConfiguration, remoteRepositoryContent, defaultRepositoryContent);
         } catch (URISyntaxException | IOException e) {
-            throw new RepositoryConfigurationException("Unable to initialize repository configuration", e);
+            throw new RepositoryConfigurationException("Unable to initialize configuration for repository '" + repository.getName() + "'", e);
         }
     }
 
-    private String getRemoteRepositoryContent(Repository repository) throws IOException {
-        String defaultBranch = repository.getDefaultBranch();
-        String contentsUrl = repository.getContentsUrl();
-        contentsUrl = contentsUrl.replace("{+path}", repositoryConfigurationPath + "?ref=" + defaultBranch);
-        File file = JsonUtils.parse(communicationService.get(contentsUrl), File.class);
-        return communicationService.get(file.getDownloadUrl());
+    private Optional<String> getRemoteRepositoryContent(Repository repository) {
+
+        try {
+            String defaultBranch = repository.getDefaultBranch();
+            String contentsUrl = repository.getContentsUrl();
+            contentsUrl = contentsUrl.replace("{+path}", repositoryConfigurationPath + "?ref=" + defaultBranch);
+            File file = JsonUtils.parse(communicationService.get(contentsUrl), File.class);
+            return Optional.of(communicationService.get(file.getDownloadUrl()));
+        } catch (Exception e) {
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("unable to retrieve remote configuration for repository '" + repository.getName() + "'", LOGGER.isDebugEnabled() ? e : e.getMessage());
+            }
+            return Optional.empty();
+        }
     }
 }

@@ -23,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +57,9 @@ public class PullRequestApprovalControllerTest {
     @Autowired
     private CommunicationServiceMock communicationServiceMock;
 
+    @Autowired
+    private StatusService statusService;
+
     private MockMvc mockMvc;
 
     private final Map<String, String> parameter = new HashMap<>(10);
@@ -63,21 +67,16 @@ public class PullRequestApprovalControllerTest {
     @Before
     public void setup() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        communicationServiceMock.setPostedStatus(null);
-        communicationServiceMock.setPostedComment(null);
-
-        System.out.println(authorizationConfiguration.getHttpHeaders());
     }
 
     @After
     public void cleanup() throws Exception {
         parameter.clear();
+        communicationServiceMock.clean();
     }
 
     @Test
     public void issueEventComment_approved_should_send_success_when_auto_approval_is_authorized() throws Exception {
-
-        System.out.println(System.getProperty("spring.profiles.active"));
 
         parameter.put("auto_approval.authorized", "true");
         parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
@@ -95,10 +94,12 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
-        assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
+        assertThat(status.isPresent()).isTrue();
+        assertThat(status.get().getState()).isEqualTo(Status.State.SUCCESS.getValue());
+        assertThat(status.get().getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -122,12 +123,14 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
-        assertThat(status).isNull();
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
+        assertThat(status.isPresent()).isFalse();
 
-        Comment comment = communicationServiceMock.getPostedComment();
-        assertThat(comment).isNotNull();
-        assertThat(comment.getBody()).isNotEmpty();
+        Optional<Comment> comment = communicationServiceMock.getPostedComments().stream().findFirst();
+        assertThat(comment.isPresent()).isTrue();
+        assertThat(comment.get().getBody()).isNotEmpty();
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.PRECONDITION_REQUIRED.value());
     }
@@ -151,15 +154,17 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
-        assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.SUCCESS.getValue());
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
+        assertThat(status.isPresent()).isTrue();
+        assertThat(status.get().getState()).isEqualTo(Status.State.SUCCESS.getValue());
 
-        Comment comment = communicationServiceMock.getPostedComment();
-        assertThat(comment).isNotNull();
-        assertThat(comment.getBody()).isNotEmpty();
-        assertThat(comment.getBody()).contains("because I was alone");
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
+        Optional<Comment> comment = communicationServiceMock.getPostedComments().stream().findFirst();
+        assertThat(comment.isPresent()).isTrue();
+        assertThat(comment.get().getBody()).isNotEmpty();
+        assertThat(comment.get().getBody()).contains("because I was alone");
+        assertThat(status.get().getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -183,10 +188,12 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
+        assertThat(status.get().getState()).isEqualTo(Status.State.ERROR.getValue());
+        assertThat(status.get().getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -210,10 +217,12 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
+        assertThat(status.get().getState()).isEqualTo(Status.State.PENDING.getValue());
+        assertThat(status.get().getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -222,6 +231,7 @@ public class PullRequestApprovalControllerTest {
     public void pullRequestEvent_opened_should_send_pending() throws Exception {
 
         parameter.put("action", PullRequestEventAction.OPENED.getValue());
+        parameter.put("label", "do not merge");
 
         communicationServiceMock.setParameters(parameter);
 
@@ -234,10 +244,12 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
         assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
+        assertThat(status.get().getState()).isEqualTo(Status.State.PENDING.getValue());
+        assertThat(status.get().getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -259,10 +271,12 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
-        assertThat(status).isNotNull();
-        assertThat(status.getState()).isEqualTo(Status.State.PENDING.getValue());
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
+        Optional<Status> status = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
+        assertThat(status.isPresent()).isTrue();
+        assertThat(status.get().getState()).isEqualTo(Status.State.PENDING.getValue());
+        assertThat(status.get().getContext()).isEqualTo(statusConfiguration.getContextPullRequestApprovalStatus());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
@@ -286,16 +300,22 @@ public class PullRequestApprovalControllerTest {
                 header("x-github-event", eventType)).andReturn();
 
         // Assertions
-        Status status = communicationServiceMock.getPostedStatus();
-        assertThat(status).isNotNull();
-        assertThat(status.getContext()).isEqualTo(statusConfiguration.getContextDoNotMergeLabelStatus());
-        assertThat(status.getState()).isEqualTo(Status.State.ERROR.getValue());
+        Optional<Status> pullRequestApprovalStatus = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.PULL_REQUEST_APPROVAL).
+                findFirst();
+        assertThat(pullRequestApprovalStatus.isPresent()).isFalse();
+        Optional<Status> doNotMergeStatus = communicationServiceMock.getPostedStatuses().stream().
+                filter(s -> statusService.getContextType(s.getContext()) == StatusService.ContextType.DO_NOT_MERGE).
+                findFirst();
+        assertThat(doNotMergeStatus.isPresent()).isTrue();
+        assertThat(doNotMergeStatus.get().getContext()).isEqualTo(statusConfiguration.getContextDoNotMergeLabelStatus());
+        assertThat(doNotMergeStatus.get().getState()).isEqualTo(Status.State.ERROR.getValue());
 
         assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    public void asynchronous_request_should_be_processed_with_succes() throws Exception {
+    public void asynchronous_request_should_be_processed_with_success() throws Exception {
 
         ExecutorService executor = Executors.newFixedThreadPool(4);
 

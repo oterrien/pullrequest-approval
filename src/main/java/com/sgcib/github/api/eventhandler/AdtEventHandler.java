@@ -1,4 +1,4 @@
-package com.sgcib.github.api;
+package com.sgcib.github.api.eventhandler;
 
 
 import com.sgcib.github.api.eventhandler.IHandler;
@@ -18,7 +18,7 @@ public abstract class AdtEventHandler<T extends  Serializable> implements IHandl
 
     protected final ICommunicationService communicationService;
 
-    protected final IRepositoryConfigurationService remoteConfigurationService;
+    protected final IRepositoryConfigurationService repositoryConfigurationService;
 
     @Autowired
     protected StatusService statusService;
@@ -27,14 +27,14 @@ public abstract class AdtEventHandler<T extends  Serializable> implements IHandl
     protected StatusConfiguration statusConfiguration;
 
     @Autowired
-    protected IssueCommentConfiguration configuration;
+    protected IssueCommentConfiguration issueCommentConfiguration;
 
     @Autowired
     protected AuthorizationConfiguration authorizationConfiguration;
 
-    protected AdtEventHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
+    protected AdtEventHandler(IRepositoryConfigurationService repositoryConfigurationService, ICommunicationService communicationService) {
 
-        this.remoteConfigurationService = remoteConfigurationService;
+        this.repositoryConfigurationService = repositoryConfigurationService;
         this.communicationService = communicationService;
     }
 
@@ -57,7 +57,7 @@ public abstract class AdtEventHandler<T extends  Serializable> implements IHandl
         }
 
         try {
-            RepositoryConfiguration remoteConfiguration = remoteConfigurationService.createRemoteConfiguration(getRepository(event));
+            RepositoryConfiguration remoteConfiguration = repositoryConfigurationService.createRemoteConfiguration(getRepository(event));
             PullRequest pullRequest = getPullRequest(event);
             Status targetStatus = statusService.createStatus(targetState, pullRequest.getUser().getLogin(), targetStatusContext, remoteConfiguration);
             return communicationService.post(pullRequest.getStatusesUrl(), targetStatus);

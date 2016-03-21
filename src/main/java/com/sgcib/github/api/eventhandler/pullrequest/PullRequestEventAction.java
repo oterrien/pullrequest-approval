@@ -11,6 +11,7 @@ public enum PullRequestEventAction {
     REOPENED("reopened"),
     SYNCHRONIZED("synchronize"),
     LABELED("labeled"),
+    UNLABELED("unlabeled"),
     NONE("");
 
     @Getter

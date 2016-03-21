@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -17,11 +19,16 @@ public class CommunicationServiceMock implements ICommunicationService {
     @Setter
     private Map<String, String> parameters;
 
-    @Getter @Setter
-    private Status postedStatus;
+    @Getter
+    private List<Status> postedStatuses = new ArrayList<>(10);
 
-    @Getter @Setter
-    private Comment postedComment;
+    @Getter
+    private List<Comment> postedComments = new ArrayList<>(10);
+
+    public void clean() {
+        postedStatuses.clear();
+        postedComments.clear();
+    }
 
     @Override
     public <T> T get(String url, Class<T> type) {
@@ -71,12 +78,12 @@ public class CommunicationServiceMock implements ICommunicationService {
     public <T> HttpStatus post(String url, T object) {
 
         if (object instanceof Status) {
-            this.postedStatus = (Status) object;
+            this.postedStatuses.add((Status) object);
             return HttpStatus.OK;
         }
 
         if (object instanceof Comment) {
-            this.postedComment = (Comment) object;
+            this.postedComments.add((Comment) object);
             return HttpStatus.OK;
         }
 
