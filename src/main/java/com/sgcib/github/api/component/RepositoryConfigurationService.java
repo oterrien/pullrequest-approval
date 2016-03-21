@@ -53,7 +53,7 @@ public final class RepositoryConfigurationService implements IRepositoryConfigur
             return Optional.of(communicationService.get(file.getDownloadUrl()));
         } catch (Exception e) {
             if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("unable to retrieve remote configuration for repository '" + repository.getName() + "'", LOGGER.isDebugEnabled() ? e : e.getMessage());
+                LOGGER.warn("unable to retrieve remote configuration for repository '" + repository.getName() + "' --> use default configuration instead", e.getMessage());
             }
             return Optional.empty();
         }
