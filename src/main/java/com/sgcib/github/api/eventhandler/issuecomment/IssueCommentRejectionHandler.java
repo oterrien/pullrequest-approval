@@ -32,10 +32,6 @@ public class IssueCommentRejectionHandler extends AdtIssueCommentEventHandler im
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.ERROR;
 
-        if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-            return HttpStatus.OK;
-        }
-
         return postStatus(event, targetState, targetStatusContext);
     }
 }

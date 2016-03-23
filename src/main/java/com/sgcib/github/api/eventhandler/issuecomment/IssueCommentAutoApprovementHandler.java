@@ -41,10 +41,6 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.SUCCESS;
 
-        if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-            return HttpStatus.OK;
-        }
-
         postAutoApprovalAlertMessage(event);
 
         return postStatus(event, targetState, targetStatusContext);

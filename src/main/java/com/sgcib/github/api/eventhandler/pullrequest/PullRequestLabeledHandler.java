@@ -30,18 +30,10 @@ public class PullRequestLabeledHandler extends AdtPullRequestEventHandler implem
 
             Status.State targetState = Status.State.ERROR;
 
-            if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-                return HttpStatus.OK;
-            }
-
             return postStatus(event, targetState, targetStatusContext);
         } else {
 
             Status.State targetState = Status.State.SUCCESS;
-
-            if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-                return HttpStatus.OK;
-            }
 
             return postStatus(event, targetState, targetStatusContext);
         }

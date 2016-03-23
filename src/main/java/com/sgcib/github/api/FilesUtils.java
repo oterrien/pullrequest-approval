@@ -24,7 +24,6 @@ public final class FilesUtils {
     }
 
     public static String readFileInClasspath(@NotNull String fileName) throws URISyntaxException, IOException {
-
         return new Scanner(ClassLoader.getSystemResourceAsStream(fileName), StandardCharsets.UTF_8.name()).
                 useDelimiter("\\Z").
                 next();
@@ -32,11 +31,5 @@ public final class FilesUtils {
 
     public static String readFileInClasspath(@NotNull String fileName, @NotNull Map<String, String> parameters) throws URISyntaxException, IOException {
         return StrSubstitutor.replace(readFileInClasspath(fileName), parameters);
-    }
-
-    private static String read(InputStream input) throws IOException {
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input))) {
-            return buffer.lines().collect(Collectors.joining("\n"));
-        }
     }
 }

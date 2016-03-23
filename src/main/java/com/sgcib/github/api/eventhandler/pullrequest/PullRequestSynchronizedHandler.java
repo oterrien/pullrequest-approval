@@ -23,10 +23,6 @@ public class PullRequestSynchronizedHandler extends AdtPullRequestEventHandler i
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.PENDING;
 
-        if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-            return HttpStatus.OK;
-        }
-
         return postStatus(event, targetState, targetStatusContext);
     }
 }

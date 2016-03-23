@@ -31,10 +31,6 @@ public class IssueCommentPendingHandler extends AdtIssueCommentEventHandler impl
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.PENDING;
 
-        if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-            return HttpStatus.OK;
-        }
-
         return postStatus(event, targetState, targetStatusContext);
     }
 }

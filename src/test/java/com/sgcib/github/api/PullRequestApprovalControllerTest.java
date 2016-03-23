@@ -49,9 +49,6 @@ public class PullRequestApprovalControllerTest {
     private IssueCommentConfiguration configuration;
 
     @Autowired
-    private AuthorizationConfiguration authorizationConfiguration;
-
-    @Autowired
     private StatusConfiguration statusConfiguration;
 
     @Autowired

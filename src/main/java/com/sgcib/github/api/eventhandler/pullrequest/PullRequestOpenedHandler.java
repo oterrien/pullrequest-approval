@@ -27,10 +27,6 @@ public class PullRequestOpenedHandler extends AdtPullRequestEventHandler impleme
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.PENDING;
 
-        if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-            return HttpStatus.OK;
-        }
-
         pullRequestLabeledHandler.handle(event);
 
         return postStatus(event, targetState, targetStatusContext);

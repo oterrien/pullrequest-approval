@@ -38,18 +38,6 @@ public abstract class AdtEventHandler<T extends  Serializable> implements IHandl
         this.communicationService = communicationService;
     }
 
-    protected boolean isStateAlreadySet(T event, Status.State targetState, String targetStatusContext) {
-
-        Status.State currentState = statusService.getCurrentState(getPullRequest(event).getStatusesUrl(), targetStatusContext);
-        if (currentState == targetState) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Status '" + targetStatusContext + "' for repository '" + getRepository(event).getName() + "' is currently set to " + targetState.getValue() + " -> no change");
-            }
-            return true;
-        }
-        return false;
-    }
-
     protected HttpStatus postStatus(T event, Status.State targetState, String targetStatusContext) {
 
         if (logger.isDebugEnabled()) {

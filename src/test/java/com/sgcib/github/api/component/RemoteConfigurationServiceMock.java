@@ -7,13 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
-public final class RemoteConfigurationServiceMock implements IRepositoryConfigurationService {
+public class RemoteConfigurationServiceMock implements IRepositoryConfigurationService {
 
     @Setter
     private Map<String, String> parameters;

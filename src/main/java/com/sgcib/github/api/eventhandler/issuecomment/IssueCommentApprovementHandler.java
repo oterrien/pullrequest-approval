@@ -39,10 +39,6 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.SUCCESS;
 
-        if (isStateAlreadySet(event, targetState, targetStatusContext)) {
-            return HttpStatus.OK;
-        }
-
         PullRequest pullRequest = event.getIssue().getPullRequest();
         if (Objects.equals(event.getComment().getUser().getLogin(), pullRequest.getUser().getLogin())) {
             try {
