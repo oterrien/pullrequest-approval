@@ -7,15 +7,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class KeyConfiguration {
 
-    @Value("${repository.configuration.key.auto_approval.authorized}")
+    @Value("${repository.configuration.key.auto_approval-authorized}")
     @Getter
     private String repositoryConfigurationAutoApprovalKey;
 
-    @Value("${repository.configuration.key.do_not_merge.label}")
+    @Value("${repository.configuration.key.do_not_merge-label}")
     @Getter
     private String repositoryConfigurationDoNotMergeLabelKey;
 
-    @Value("${repository.configuration.key.admins.team}")
+    @Value("${repository.configuration.key.admins-team}")
     @Getter
     private String repositoryConfigurationAdminTeamKey;
 }

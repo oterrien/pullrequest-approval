@@ -1,6 +1,8 @@
 package com.sgcib.github.api.eventhandler;
 
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,8 @@ import java.util.stream.Stream;
 @Component
 public class EventHandlerDispatcher {
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(EventHandlerDispatcher.class);
+
     @Autowired
     private IHandler<String, HttpStatus> issueCommentEventHandlerDispatcher;
 
@@ -19,6 +23,10 @@ public class EventHandlerDispatcher {
     private IHandler<String, HttpStatus> pullRequestEventHandlerDispatcher;
 
     public ResponseEntity<String> handle(String event, String body) {
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Dispatching event to dedicated handler");
+        }
 
         return getEventHandler(event)
                 .map(eventHandler -> eventHandler.handle(body))

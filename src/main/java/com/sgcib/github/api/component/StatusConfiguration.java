@@ -17,30 +17,30 @@ import java.util.Properties;
 @Component
 public class StatusConfiguration {
 
-    @Value("${status.context.pullrequest_approval.name}")
+    @Value("${status.context.pullrequest_approval}")
     @Getter
     private String contextPullRequestApprovalStatus;
 
-    @Value("${status.context.do_not_merge_label.name}")
+    @Value("${status.context.do_not_merge_label}")
     @Getter
     private String contextDoNotMergeLabelStatus;
 
-    @Value("${status.message.template.path}")
+    @Value("${status.message.template-path}")
     private String messageTemplatePath;
 
-    @Value("${status.message.pullrequest_approval.success.key}")
+    @Value("${status.message.key.pullrequest_approval.success}")
     private String messagePullRequestApprovalSuccessKey;
 
-    @Value("${status.message.pullrequest_approval.pending.key}")
+    @Value("${status.message.key.pullrequest_approval.pending}")
     private String messagePullRequestApprovalPendingKey;
 
-    @Value("${status.message.pullrequest_approval.error.key}")
+    @Value("${status.message.key.pullrequest_approval.error}")
     private String messagePullRequestApprovalErrorKey;
 
-    @Value("${status.message.do_not_merge.success.key}")
+    @Value("${status.message.key.do_not_merge.success}")
     private String messageDoNotMergeSuccessKey;
 
-    @Value("${status.message.do_not_merge.error.key}")
+    @Value("${status.message.key.do_not_merge.error}")
     private String messageDoNotMergeErrorKey;
 
     @Getter

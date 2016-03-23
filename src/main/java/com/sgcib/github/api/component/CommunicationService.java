@@ -30,8 +30,8 @@ public class CommunicationService implements ICommunicationService {
     public <T> HttpStatus post(String url, T object) {
 
         try {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Posting " + object.toString() + " to " + url);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Posting " + object.toString() + " to " + url);
             }
 
             HttpEntity<String> entity = new HttpEntity<>(JsonUtils.serialize(object), authorizationConfiguration.getHttpHeaders());
@@ -48,8 +48,8 @@ public class CommunicationService implements ICommunicationService {
     @Override
     public String get(String url) {
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Getting data from " + url);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Getting data from " + url);
         }
 
         try {

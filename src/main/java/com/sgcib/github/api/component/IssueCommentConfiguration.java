@@ -13,23 +13,23 @@ import java.util.List;
 @Component
 public final class IssueCommentConfiguration {
 
-    @Value("${issue.comments.list.approval}")
+    @Value("${issue.comments.approval}")
     private String approvalComments;
 
-    @Value("${issue.comments.list.auto_approval}")
+    @Value("${issue.comments.auto_approval}")
     private String autoApprovalComments;
 
-    @Value("${issue.comments.list.rejection}")
+    @Value("${issue.comments.rejection}")
     private String rejectionComments;
 
-    @Value("${issue.comments.list.pending}")
+    @Value("${issue.comments.pending}")
     private String pendingComments;
 
-    @Value("${file.auto_approval.advice.message.template}")
+    @Value("${message-template.advice}")
     @Getter
     private String autoApprovalAdviceMessageTemplateFileName;
 
-    @Value("${file.auto_approval.alert.message.template}")
+    @Value("${message-template.alert}")
     @Getter
     private String autoApprovalAlertMessageTemplateFileName;
 

@@ -1,0 +1,50 @@
+
+#TODO : transformer en yaml
+
+#server:
+#  port: ${port}}
+
+logging:
+  level:
+    org.springframework.web: WARN
+    com.sgcib.github.api: INFO
+
+issue:
+  comments:
+      approval: validated,ok to merge
+      auto_approval: auto-approved because
+      rejection: refused, rejected
+      pending: to be reviewed
+
+status:
+  context:
+    pullrequest_approval: manual/pullrequest-approval
+    do_not_merge_label: label/do-not-merge
+  message:
+    template-path: .pullrequest-approval/message.template.properties
+    key:
+      pullrequest_approval:
+        success: message.status.pullrequest_approval.success
+        pending: message.status.pullrequest_approval.pending
+        error: message.status.pullrequest_approval.error
+      do_not_merge:
+        success: message.status.do_not_merge.success
+        error: message.status.do_not_merge.error
+
+handler:
+  authorization:
+    login: oterrienGmail
+    password: 3ff59c73cea674337db0964a7fc642aa452f5b78
+
+message-template:
+  advice: message-advice.md
+  alert: message-alert.md
+
+repository:
+  configuration:
+    path:
+      .pullrequest-approval/configuration.properties
+    key:
+      auto_approval-authorized: auto_approval.authorized
+      do_not_merge-label: label.do_not_merge.name
+      admins-team: admin.teams.name

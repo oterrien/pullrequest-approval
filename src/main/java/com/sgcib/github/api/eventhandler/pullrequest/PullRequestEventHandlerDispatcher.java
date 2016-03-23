@@ -1,13 +1,12 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
-import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.eventhandler.AdtEventHandlerDispatcher;
+import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.json.PullRequestEvent;
+import com.sgcib.github.api.json.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Component
 public class PullRequestEventHandlerDispatcher extends AdtEventHandlerDispatcher<PullRequestEvent> implements IHandler<String, HttpStatus> {
@@ -30,9 +29,14 @@ public class PullRequestEventHandlerDispatcher extends AdtEventHandlerDispatcher
 
         String action = event.getAction();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Pull request action is '" + action + "'");
+        if (logger.isInfoEnabled()) {
+            logger.info("Handling pull-request action : " + action);
         }
+
+        return dispatch(event, action);
+    }
+
+    private HttpStatus dispatch(PullRequestEvent event, String action) {
 
         switch (PullRequestEventAction.of(action)) {
             case OPENED:
@@ -48,10 +52,9 @@ public class PullRequestEventHandlerDispatcher extends AdtEventHandlerDispatcher
     }
 
     @Override
-    protected boolean isTechnicalUserAction(PullRequestEvent event) {
+    protected User getUser(PullRequestEvent event) {
 
-        String technicalUser = authorizationConfiguration.getTechnicalUserLogin();
-        return (Objects.equals(event.getPullRequest().getUser().getLogin(), technicalUser));
+        return event.getPullRequest().getUser();
     }
 
 }

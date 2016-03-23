@@ -1,15 +1,14 @@
 package com.sgcib.github.api.eventhandler.issuecomment;
 
-import com.sgcib.github.api.eventhandler.IHandler;
+import com.sgcib.github.api.component.IssueCommentConfiguration;
 import com.sgcib.github.api.eventhandler.AdtEventHandlerDispatcher;
 import com.sgcib.github.api.eventhandler.EventHandlerException;
+import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.json.IssueCommentEvent;
-import com.sgcib.github.api.component.IssueCommentConfiguration;
+import com.sgcib.github.api.json.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Component
 public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatcher<IssueCommentEvent> implements IHandler<String, HttpStatus> {
@@ -36,15 +35,20 @@ public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatche
     @Override
     public HttpStatus handle(IssueCommentEvent event) throws EventHandlerException {
 
-        if (event.getIssue().getPullRequest() == null){
+        String comment = event.getComment().getBody().trim();
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Handling issue-comment : " + comment);
+        }
+
+        if (event.getIssue().getPullRequest() == null) {
             return HttpStatus.OK;
         }
 
-        String comment = event.getComment().getBody().trim();
+        return dispatch(event, comment);
+    }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Issue comments is '" + comment + "'");
-        }
+    private HttpStatus dispatch(IssueCommentEvent event, String comment) {
 
         switch (configuration.getType(comment)) {
             case APPROVEMENT:
@@ -56,15 +60,12 @@ public class IssueCommentEventHandlerDispatcher extends AdtEventHandlerDispatche
             case AUTO_APPROVEMENT:
                 return issueCommentAutoApprovementHandler.handle(event);
         }
-
         return HttpStatus.OK;
     }
 
     @Override
-    protected boolean isTechnicalUserAction(IssueCommentEvent event) {
+    protected User getUser(IssueCommentEvent event) {
 
-        String technicalUser = authorizationConfiguration.getTechnicalUserLogin();
-        return (Objects.equals(event.getComment().getUser().getLogin(), technicalUser));
+        return event.getComment().getUser();
     }
-
 }
