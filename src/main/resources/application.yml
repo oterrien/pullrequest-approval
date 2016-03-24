@@ -13,7 +13,7 @@ issue:
   comments:
       approval: validated,ok to merge
       auto_approval: auto-approved because
-      rejection: refused, rejected
+      rejection: refused,rejected
       pending: to be reviewed
 
 status:
