@@ -36,7 +36,8 @@ handler:
     # login: ITEC-FCC-OSD-SF
     login: oterrienGmail
     # password: e3a381d098a5543d39cbf6bbff6f1679d9ded0c8
-    password: 1e508d730f4fb43629e45e57137a6a80b0e518b9
+    #password: 614bc56d72e86e7988926b618bdc4958793e935b
+    password: NjE0YmM1NmQ3MmU4NmU3OTg4OTI2YjYxOGJkYzQ5NTg3OTNlOTM1Yg==
 
 message-template:
   advice: message-advice.md

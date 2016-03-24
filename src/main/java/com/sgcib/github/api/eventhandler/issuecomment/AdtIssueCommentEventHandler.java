@@ -75,7 +75,7 @@ public abstract class AdtIssueCommentEventHandler extends AdtEventHandler<IssueC
             return Optional.of(users.getUsers());
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
-                logger.error("Unable to retrieve last status from " + collaboratorsUrl, e);
+                logger.error("Unable to retrieve collaborators from " + collaboratorsUrl, e);
             }
             return Optional.empty();
         }
