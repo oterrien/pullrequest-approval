@@ -33,7 +33,9 @@ status:
 
 handler:
   authorization:
+    # login: ITEC-FCC-OSD-SF
     login: oterrienGmail
+    # password: e3a381d098a5543d39cbf6bbff6f1679d9ded0c8
     password: 3ff59c73cea674337db0964a7fc642aa452f5b78
 
 message-template:
