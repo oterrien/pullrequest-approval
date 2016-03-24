@@ -1,8 +1,8 @@
 
 #TODO : transformer en yaml
 
-#server:
-#  port: ${port}}
+server:
+  port: ${port:8080}}
 
 logging:
   level:
