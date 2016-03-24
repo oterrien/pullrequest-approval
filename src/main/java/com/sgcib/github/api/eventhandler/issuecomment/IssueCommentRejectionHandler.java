@@ -2,6 +2,7 @@ package com.sgcib.github.api.eventhandler.issuecomment;
 
 import com.sgcib.github.api.component.ICommunicationService;
 import com.sgcib.github.api.component.IRepositoryConfigurationService;
+import com.sgcib.github.api.component.RepositoryConfiguration;
 import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.json.IssueCommentEvent;
 import com.sgcib.github.api.json.Status;
@@ -22,7 +23,7 @@ public class IssueCommentRejectionHandler extends AdtIssueCommentEventHandler im
 
         if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())) {
             if (logger.isDebugEnabled()) {
-                logger.debug("User "+ event.getComment().getUser().getLogin() +" is not authorized to reject pull request for repository '" + event.getRepository().getName() + "'");
+                logger.debug("User " + event.getComment().getUser().getLogin() + " is not authorized to reject pull request for repository '" + event.getRepository().getName() + "'");
             }
             return HttpStatus.UNAUTHORIZED;
         }
@@ -32,6 +33,7 @@ public class IssueCommentRejectionHandler extends AdtIssueCommentEventHandler im
         String targetStatusContext = statusConfiguration.getContextPullRequestApprovalStatus();
         Status.State targetState = Status.State.ERROR;
 
-        return postStatus(event, targetState, targetStatusContext);
+        RepositoryConfiguration repositoryConfiguration = getRepositoryConfiguration(event.getRepository());
+        return postStatus(event, targetState, targetStatusContext, repositoryConfiguration);
     }
 }

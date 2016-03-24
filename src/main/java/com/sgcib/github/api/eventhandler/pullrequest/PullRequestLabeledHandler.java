@@ -1,11 +1,12 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
+import com.sgcib.github.api.component.ICommunicationService;
+import com.sgcib.github.api.component.IRepositoryConfigurationService;
+import com.sgcib.github.api.component.RepositoryConfiguration;
 import com.sgcib.github.api.eventhandler.IHandler;
-import com.sgcib.github.api.eventhandler.EventHandlerException;
 import com.sgcib.github.api.json.Issue;
 import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Status;
-import com.sgcib.github.api.component.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -23,27 +24,17 @@ public class PullRequestLabeledHandler extends AdtPullRequestEventHandler implem
 
         String targetStatusContext = statusConfiguration.getContextDoNotMergeLabelStatus();
 
-        String doNotMergeLabelName = getDoNotMergeLabelName(event);
+        RepositoryConfiguration repositoryConfiguration = getRepositoryConfiguration(event.getRepository());
+
         Issue issue = communicationService.get(event.getPullRequest().getIssueUrl(), Issue.class);
 
-        if (issue.getLabels().stream().anyMatch(l -> l.getName().equals(doNotMergeLabelName))) {
-
+        if (issue.getLabels().stream().anyMatch(l -> l.getName().
+                equals(repositoryConfiguration.getDoNotMergeLabelName()))) {
             Status.State targetState = Status.State.ERROR;
-
-            return postStatus(event, targetState, targetStatusContext);
+            return postStatus(event, targetState, targetStatusContext, repositoryConfiguration);
         } else {
-
             Status.State targetState = Status.State.SUCCESS;
-
-            return postStatus(event, targetState, targetStatusContext);
-        }
-    }
-
-    private String getDoNotMergeLabelName(PullRequestEvent event) {
-        try {
-            return repositoryConfigurationService.createRemoteConfiguration(event.getRepository()).getDoNotMergeLabelName();
-        } catch (RepositoryConfigurationException e) {
-            throw new EventHandlerException(e, HttpStatus.PRECONDITION_FAILED, e.getMessage());
+            return postStatus(event, targetState, targetStatusContext, repositoryConfiguration);
         }
     }
 }

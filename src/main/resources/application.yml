@@ -21,7 +21,7 @@ status:
     pullrequest_approval: manual/pullrequest-approval
     do_not_merge_label: label/do-not-merge
   message:
-    template-path: .pullrequest-approval/message.template.properties
+    template-path: .pullrequest-approval/message_template.properties
     key:
       pullrequest_approval:
         success: message.status.pullrequest_approval.success
@@ -36,7 +36,7 @@ handler:
     # login: ITEC-FCC-OSD-SF
     login: oterrienGmail
     # password: e3a381d098a5543d39cbf6bbff6f1679d9ded0c8
-    password: 3ff59c73cea674337db0964a7fc642aa452f5b78
+    password: 1e508d730f4fb43629e45e57137a6a80b0e518b9
 
 message-template:
   advice: message-advice.md
@@ -47,6 +47,6 @@ repository:
     path:
       .pullrequest-approval/configuration.properties
     key:
-      auto_approval-authorized: auto_approval.authorized
-      do_not_merge-label: label.do_not_merge.name
-      admins-team: admin.teams.name
+      "auto_approval.is_authorized": auto_approval.is_authorized
+      "do_not_merge.label.name": do_not_merge.label.name
+      "admins.teams.name": admins.teams.name

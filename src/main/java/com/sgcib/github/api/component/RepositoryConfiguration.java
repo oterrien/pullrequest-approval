@@ -15,7 +15,7 @@ public final class RepositoryConfiguration {
     private final String doNotMergeLabelName;
 
     @Getter
-    private final List<String> adminTeam;
+    private final List<String> adminsTeamsName;
 
     Properties repositoryRemoteProperties = new Properties();
 
@@ -29,9 +29,9 @@ public final class RepositoryConfiguration {
 
         this.defaultRepositoryProperties.load(new ByteArrayInputStream(defaultRepositoryContent.getBytes()));
 
-        this.isAutoApprovalAuthorized = Boolean.parseBoolean(get(keyConfiguration.getRepositoryConfigurationAutoApprovalKey()));
-        this.doNotMergeLabelName = get(keyConfiguration.getRepositoryConfigurationDoNotMergeLabelKey());
-        this.adminTeam= Arrays.asList(get(keyConfiguration.getRepositoryConfigurationAdminTeamKey()).split(","));
+        this.isAutoApprovalAuthorized = Boolean.parseBoolean(get(keyConfiguration.getAutoApprovalAuthorizedKey()));
+        this.doNotMergeLabelName = get(keyConfiguration.getDoNotMergeLabelNameKey());
+        this.adminsTeamsName = Arrays.asList(get(keyConfiguration.getAdminsTeamsNameKey()).split(","));
     }
 
     private String get(String key) {

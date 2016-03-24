@@ -1,10 +1,11 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
+import com.sgcib.github.api.component.ICommunicationService;
+import com.sgcib.github.api.component.IRepositoryConfigurationService;
+import com.sgcib.github.api.component.RepositoryConfiguration;
 import com.sgcib.github.api.eventhandler.IHandler;
 import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Status;
-import com.sgcib.github.api.component.ICommunicationService;
-import com.sgcib.github.api.component.IRepositoryConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,6 @@ public class PullRequestOpenedHandler extends AdtPullRequestEventHandler impleme
 
     @Autowired
     private IHandler<PullRequestEvent, HttpStatus> pullRequestLabeledHandler;
-
 
     @Autowired
     public PullRequestOpenedHandler(IRepositoryConfigurationService remoteConfigurationService, ICommunicationService communicationService) {
@@ -29,7 +29,7 @@ public class PullRequestOpenedHandler extends AdtPullRequestEventHandler impleme
 
         pullRequestLabeledHandler.handle(event);
 
-        return postStatus(event, targetState, targetStatusContext);
-
+        RepositoryConfiguration repositoryConfiguration = getRepositoryConfiguration(event.getRepository());
+        return postStatus(event, targetState, targetStatusContext, repositoryConfiguration);
     }
 }

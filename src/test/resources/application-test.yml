@@ -1,19 +1,19 @@
 
 #TODO : transformer en yaml
 
-#server:
-#  port: ${port}}
+server:
+  port: ${port:8080}
 
 logging:
   level:
     org.springframework.web: WARN
-    com.sgcib.github.api: DEBUG
+    com.sgcib.github.api: INFO
 
 issue:
   comments:
-      approval: validated, ok to merge
+      approval: validated,ok to merge
       auto_approval: auto-approved because
-      rejection: refused, rejected
+      rejection: refused,rejected
       pending: to be reviewed
 
 status:
@@ -21,7 +21,7 @@ status:
     pullrequest_approval: manual/pullrequest-approval
     do_not_merge_label: label/do-not-merge
   message:
-    template-path: .pullrequest-approval/message.template-test.properties
+    template-path: .pullrequest-approval/message_template-test.properties
     key:
       pullrequest_approval:
         success: message.status.pullrequest_approval.success
@@ -45,6 +45,6 @@ repository:
     path:
       .pullrequest-approval/configuration-test.properties
     key:
-      auto_approval-authorized: auto_approval.authorized
-      do_not_merge-label: label.do_not_merge.name
-      admins-team: admin.teams.name
+      "auto_approval.is_authorized": auto_approval.is_authorized
+      "do_not_merge.label.name": do_not_merge.label.name
+      "admins.teams.name": admins.teams.name

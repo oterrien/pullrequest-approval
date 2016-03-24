@@ -29,9 +29,9 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
     @Override
     public HttpStatus handle(IssueCommentEvent event) {
 
-        if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())){
+        if (!isUserAuthorized(event.getRepository(), event.getComment().getUser())) {
             if (logger.isDebugEnabled()) {
-                logger.debug("User "+ event.getComment().getUser().getLogin() +" is not authorized to approve pull request for repository '" + event.getRepository().getName() + "'");
+                logger.debug("User " + event.getComment().getUser().getLogin() + " is not authorized to approve pull request for repository '" + event.getRepository().getName() + "'");
             }
             return HttpStatus.UNAUTHORIZED;
         }
@@ -43,8 +43,8 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
 
         postAutoApprovalAlertMessage(event);
 
-        return postStatus(event, targetState, targetStatusContext);
-
+        RepositoryConfiguration repositoryConfiguration = getRepositoryConfiguration(event.getRepository());
+        return postStatus(event, targetState, targetStatusContext, repositoryConfiguration);
     }
 
     private void postAutoApprovalAlertMessage(IssueCommentEvent event) {
@@ -63,18 +63,18 @@ public class IssueCommentAutoApprovementHandler extends AdtIssueCommentEventHand
         postComment(templateName, param, event);
     }
 
-    private List<String> getAdministrators(Repository repository){
+    private List<String> getAdministrators(Repository repository) {
 
         User owner = repository.getOwner();
         User.Type type = User.Type.of(owner.getType());
 
-        if (type == User.Type.ORGANIZATION){
+        if (type == User.Type.ORGANIZATION) {
             try {
-                RepositoryConfiguration repositoryConfiguration = repositoryConfigurationService.createRemoteConfiguration(repository);
-                return repositoryConfiguration.getAdminTeam();
-            } catch (Exception e){
+                RepositoryConfiguration repositoryConfiguration = getRepositoryConfiguration(repository);
+                return repositoryConfiguration.getAdminsTeamsName();
+            } catch (Exception e) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("unable to retrieve remote configuration for repository '" + repository.getName() +"'", logger.isDebugEnabled() ? e : e.getMessage());
+                    logger.warn("unable to retrieve remote configuration for repository '" + repository.getName() + "'", logger.isDebugEnabled() ? e : e.getMessage());
                 }
             }
         }

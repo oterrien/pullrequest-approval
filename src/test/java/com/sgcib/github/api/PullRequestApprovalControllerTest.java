@@ -75,7 +75,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void issueEventComment_approved_should_send_success_when_auto_approval_is_authorized() throws Exception {
 
-        parameter.put("auto_approval.authorized", "true");
+        parameter.put("auto_approval.is_authorized", "true");
         parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
         parameter.put("last_state", Status.State.PENDING.getValue());
         parameter.put("user", "my-owner");
@@ -105,7 +105,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void issueEventComment_approved_should_send_error_and_post_comment_when_auto_approval_is_forbidden() throws Exception {
 
-        parameter.put("auto_approval.authorized", "false");
+        parameter.put("auto_approval.is_authorized", "false");
         parameter.put("issue_comment", configuration.getApprovalCommentsList().get(0));
         parameter.put("last_state", Status.State.PENDING.getValue());
         parameter.put("user", "my-owner");
@@ -137,7 +137,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void issueEventComment_auto_approved_should_send_success_and_post_comment_when_auto_approval_is_enabled() throws Exception {
 
-        parameter.put("auto_approval.authorized", "true");
+        parameter.put("auto_approval.is_authorized", "true");
         parameter.put("issue_comment", configuration.getAutoApprovalCommentsList().get(0) + " because I was alone");
         parameter.put("last_state", Status.State.PENDING.getValue());
         parameter.put("user", "my-owner");
@@ -172,7 +172,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void issueEventComment_rejected_should_send_error() throws Exception {
 
-        parameter.put("auto_approval.authorized", "true");
+        parameter.put("auto_approval.is_authorized", "true");
         parameter.put("issue_comment", configuration.getRejectionCommentsList().get(0));
         parameter.put("last_state", Status.State.SUCCESS.getValue());
         parameter.put("user", "my-owner");
@@ -202,7 +202,7 @@ public class PullRequestApprovalControllerTest {
     @Test
     public void issueEventComment_tobereviewed_should_send_pending() throws Exception {
 
-        parameter.put("auto_approval.authorized", "true");
+        parameter.put("auto_approval.is_authorized", "true");
         parameter.put("issue_comment", configuration.getPendingCommentsList().get(0));
         parameter.put("last_state", Status.State.SUCCESS.getValue());
         parameter.put("user", "my-owner");
@@ -325,7 +325,7 @@ public class PullRequestApprovalControllerTest {
 
         Stream.of(
                 getPullRequestTask(PullRequestEventAction.OPENED, Status.State.ERROR, HttpStatus.OK),
-                getIssueCommentTask("approved", Status.State.PENDING, HttpStatus.PRECONDITION_REQUIRED),
+                getIssueCommentTask("validated", Status.State.PENDING, HttpStatus.PRECONDITION_REQUIRED),
                 getPullRequestTask(PullRequestEventAction.OPENED, Status.State.SUCCESS, HttpStatus.OK),
                 getPullRequestTask(PullRequestEventAction.SYNCHRONIZED, Status.State.PENDING, HttpStatus.OK),
                 getIssueCommentTask("rejected", Status.State.ERROR, HttpStatus.OK),
@@ -368,7 +368,7 @@ public class PullRequestApprovalControllerTest {
                                          HttpStatus expectedStatus) {
 
         Map<String, String> parameter = new HashMap<>(10);
-        parameter.put("auto_approval.authorized", "true");
+        parameter.put("auto_approval.is_authorized", "true");
         parameter.put("issue_comment", comment);
         parameter.put("last_state", latestState.getValue());
         parameter.put("user", "my_owner");
