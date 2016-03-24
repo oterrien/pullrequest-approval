@@ -2,7 +2,7 @@
 #TODO : transformer en yaml
 
 server:
-  port: ${port:8080}}
+  port: ${port:8080}
 
 logging:
   level:
