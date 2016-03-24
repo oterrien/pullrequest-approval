@@ -70,7 +70,7 @@ public class IssueCommentApprovementHandler extends AdtIssueCommentEventHandler 
 
         Map<String, String> param = new HashMap<>(10);
         param.put("user", "@" + user.getLogin());
-        param.put("issue.comments.list.auto_approval", issueCommentConfiguration.getAutoApprovalCommentsList().stream().map(p -> "\"**" + p + "**\" {reason}").collect(Collectors.joining(" or ")));
+        param.put("issue.comments.list.auto_approval", issueCommentConfiguration.getAutoApprovalCommentsList().stream().map(p -> "\"**" + p + "** {reason}\"")..collect(Collectors.joining(" or ")));
 
         postComment(templateName, param, event);
     }
