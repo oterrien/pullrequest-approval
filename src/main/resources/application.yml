@@ -33,11 +33,12 @@ status:
 
 handler:
   authorization:
-    # login: ITEC-FCC-OSD-SF
+    #login: ITEC-FCC-OSD-SF
+    #password: e3a381d098a5543d39cbf6bbff6f1679d9ded0c8
+    #password-encrypted: false
     login: oterrienGmail
-    # password: e3a381d098a5543d39cbf6bbff6f1679d9ded0c8
-    #password: 614bc56d72e86e7988926b618bdc4958793e935b
-    password: NjE0YmM1NmQ3MmU4NmU3OTg4OTI2YjYxOGJkYzQ5NTg3OTNlOTM1Yg==
+    password: rM0M5ruQEkuNO+tfE5zkjZJilr58rXPqBuCqvx/VhvzHvXitOhTxlo2LSXQBw5pL
+    password-encrypted: true
 
 message-template:
   advice: message-advice.md

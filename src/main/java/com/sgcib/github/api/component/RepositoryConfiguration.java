@@ -4,7 +4,10 @@ import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public final class RepositoryConfiguration {
 

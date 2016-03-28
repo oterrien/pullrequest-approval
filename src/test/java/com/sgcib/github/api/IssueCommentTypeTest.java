@@ -40,7 +40,7 @@ public class IssueCommentTypeTest {
     @Test
     public void an_approved_message_should_be_bound_with_APPROVEMENT() {
 
-        for (String comment : configuration.getApprovalCommentsList()){
+        for (String comment : configuration.getApprovalCommentsList()) {
             assertThat(configuration.getType(comment)).isEqualTo(IssueCommentConfiguration.Type.APPROVEMENT);
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.AUTO_APPROVEMENT);
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.REJECTION);
@@ -51,7 +51,7 @@ public class IssueCommentTypeTest {
     @Test
     public void an_autoapproved_message_should_be_bound_with_AUTO_APPROVEMENT() {
 
-        for (String comment : configuration.getAutoApprovalCommentsList()){
+        for (String comment : configuration.getAutoApprovalCommentsList()) {
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.APPROVEMENT);
             assertThat(configuration.getType(comment)).isEqualTo(IssueCommentConfiguration.Type.AUTO_APPROVEMENT);
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.REJECTION);
@@ -62,7 +62,7 @@ public class IssueCommentTypeTest {
     @Test
     public void a_rejected_message_should_be_bound_with_REJECTION() {
 
-        for (String comment : configuration.getRejectionCommentsList()){
+        for (String comment : configuration.getRejectionCommentsList()) {
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.APPROVEMENT);
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.AUTO_APPROVEMENT);
             assertThat(configuration.getType(comment)).isEqualTo(IssueCommentConfiguration.Type.REJECTION);
@@ -73,7 +73,7 @@ public class IssueCommentTypeTest {
     @Test
     public void a_pending_message_should_be_bound_with_PENDING() {
 
-        for (String comment : configuration.getPendingCommentsList()){
+        for (String comment : configuration.getPendingCommentsList()) {
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.APPROVEMENT);
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.AUTO_APPROVEMENT);
             assertThat(configuration.getType(comment)).isNotEqualTo(IssueCommentConfiguration.Type.REJECTION);

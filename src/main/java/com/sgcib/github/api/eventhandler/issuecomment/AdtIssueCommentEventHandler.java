@@ -52,7 +52,7 @@ public abstract class AdtIssueCommentEventHandler extends AdtEventHandler<IssueC
 
         Optional<List<User>> authorizedUsers = getAuthorizedUsers(repository);
 
-        if (!authorizedUsers.isPresent()){
+        if (!authorizedUsers.isPresent()) {
             return false;
         }
 

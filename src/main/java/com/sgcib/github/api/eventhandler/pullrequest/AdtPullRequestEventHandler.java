@@ -1,8 +1,9 @@
 package com.sgcib.github.api.eventhandler.pullrequest;
 
+import com.sgcib.github.api.component.ICommunicationService;
+import com.sgcib.github.api.component.IRepositoryConfigurationService;
 import com.sgcib.github.api.eventhandler.AdtEventHandler;
 import com.sgcib.github.api.eventhandler.IHandler;
-import com.sgcib.github.api.component.*;
 import com.sgcib.github.api.json.PullRequest;
 import com.sgcib.github.api.json.PullRequestEvent;
 import com.sgcib.github.api.json.Repository;

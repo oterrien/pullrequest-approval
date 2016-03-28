@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.nio.charset.Charset;
 
 @Component
 public class AuthorizationConfiguration {
@@ -21,13 +20,23 @@ public class AuthorizationConfiguration {
     @Value("${handler.authorization.password}")
     private String technicalUserPassword;
 
+    @Value("${handler.authorization.password-encrypted}")
+    private boolean technicalUserPasswordEncrypted;
+
     @Getter
     private HttpHeaders httpHeaders = new HttpHeaders();
 
     @PostConstruct
     private void setUp() {
 
-        this.technicalUserPassword = new String(Base64.decodeBase64(technicalUserPassword.getBytes(Charsets.UTF_8)));
+        if (technicalUserPasswordEncrypted)
+        {
+            try {
+                technicalUserPassword = new Crypter().decrypt(technicalUserPassword);
+            } catch (Crypter.Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         String auth = technicalUserLogin + ":" + technicalUserPassword;
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charsets.UTF_8));
@@ -35,4 +44,5 @@ public class AuthorizationConfiguration {
         this.httpHeaders.set("Authorization", authHeader);
         this.httpHeaders.setContentType(MediaType.APPLICATION_JSON);
     }
+
 }

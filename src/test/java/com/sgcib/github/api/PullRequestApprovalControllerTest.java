@@ -39,27 +39,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @WebAppConfiguration
 public class PullRequestApprovalControllerTest {
 
+    private final Map<String, String> parameter = new HashMap<>(10);
     @Autowired
     private WebApplicationContext webApplicationContext;
-
     @Autowired
     private RemoteConfigurationServiceMock remoteConfigurationServiceMock;
-
     @Autowired
     private IssueCommentConfiguration configuration;
-
     @Autowired
     private StatusConfiguration statusConfiguration;
-
     @Autowired
     private CommunicationServiceMock communicationServiceMock;
-
     @Autowired
     private StatusService statusService;
-
     private MockMvc mockMvc;
-
-    private final Map<String, String> parameter = new HashMap<>(10);
 
     @Before
     public void setup() throws Exception {

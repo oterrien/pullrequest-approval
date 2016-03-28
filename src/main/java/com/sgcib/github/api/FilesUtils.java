@@ -3,15 +3,11 @@ package com.sgcib.github.api;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 import javax.validation.constraints.NotNull;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 /**
  * Created by oterrien092210 on 16/03/2016.

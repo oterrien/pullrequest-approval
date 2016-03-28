@@ -41,7 +41,7 @@ public abstract class AdtEventHandler<T extends Serializable> implements IHandle
     protected RepositoryConfiguration getRepositoryConfiguration(Repository repository) {
         try {
             return this.repositoryConfigurationService.createRemoteConfiguration(repository);
-        } catch (RepositoryConfigurationException e){
+        } catch (RepositoryConfigurationException e) {
             throw new EventHandlerException(e, HttpStatus.PRECONDITION_FAILED, e.getMessage());
         }
     }
