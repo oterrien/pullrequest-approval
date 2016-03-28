@@ -47,7 +47,7 @@ public class AuthorizationConfiguration {
         String auth = technicalUserLogin + ":" + technicalUserPassword;
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charsets.UTF_8));
         String authHeader = "Basic " + new String(encodedAuth);
-        
+
         this.httpHeaders = new HttpHeaders();
         this.httpHeaders.set("Authorization", authHeader);
         this.httpHeaders.setContentType(MediaType.APPLICATION_JSON);
