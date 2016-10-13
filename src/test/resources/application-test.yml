@@ -7,7 +7,7 @@ server:
 logging:
   level:
     org.springframework.web: WARN
-    com.sgcib.github.api: INFO
+    com.ote.github.api: INFO
 
 issue:
   comments:
@@ -35,6 +35,8 @@ handler:
   authorization:
     login: mock
     password: mock
+    password-encrypted: false
+
 
 message-template:
   advice: message-advice.md

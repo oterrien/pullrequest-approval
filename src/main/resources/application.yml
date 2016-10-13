@@ -7,7 +7,7 @@ server:
 logging:
   level:
     org.springframework.web: WARN
-    com.sgcib.github.api: INFO
+    com.ote.github.api: INFO
 
 issue:
   comments:
